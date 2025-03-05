@@ -1,4 +1,4 @@
-export default config = {
+const config = {
   plugins: ["prettier-plugin-tailwindcss"],
   semi: true,
   singleQuote: true,
@@ -7,3 +7,5 @@ export default config = {
   printWidth: 100,
   endOfLine: "lf",
 };
+
+export default config;
