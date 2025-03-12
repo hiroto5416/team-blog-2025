@@ -1,7 +1,7 @@
+import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
-import { NextResponse, NextRequest } from "next/server";  // NextRequestをインポート
 
-export async function POST(req: NextRequest) {  // reqをNextRequest型に変更
+export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
     console.log("Received sign-up request:", { email });
