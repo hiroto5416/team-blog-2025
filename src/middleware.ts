@@ -7,15 +7,13 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
 
-  // ユーザー情報を取得
-  const { data } = await supabase.auth.getUser();
-  const isAuthenticated = !!data.user;
+ const { data: { session } } = await supabase.auth.getSession();
 
   // 保護したいページのリスト
   const protectedRoutes = ["/profile", "/articlecreate"];
 
   // 認証が必要なページで未認証ユーザーがアクセスした場合、サインインページにリダイレクト
-  if (!isAuthenticated && protectedRoutes.includes(req.nextUrl.pathname)) {
+  if (!session && protectedRoutes.includes(req.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/auth/signin", req.url));
   }
 
