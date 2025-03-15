@@ -1,39 +1,27 @@
+// app/page.tsx
 "use client";
 
-import SignInForm from './auth/SignIn/page';
-import { Arrow } from '@/components/ui/custom/Arrow';
-import { AuthInput } from '@/components/ui/custom/AuthInput';
-import { SearchInput } from '@/components/ui/custom/SearchInput';
-import { useRouter } from 'next/navigation';
-// import { Spinner } from '@/components/ui/custom/Spinner';
+import { useState } from "react";
+import SearchBar from "@/components/ui/custom/search-input"; // 検索バー
+import BlogList from "@/components/modules/blog-list"; // 記事一覧
 
-export default function Home() {
-  const router = useRouter();
-  const handleRedirectSignin = () => {
-    router.push("/auth/signin");
-  };
-  const handleRedirectSignup = () => {
-    router.push("/auth/signup");
+export default function HomePage() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // 検索入力のハンドラー
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
   };
 
   return (
-    <>
-      {/* <Spinner /> */}
-      <SignInForm />
+    <section className="space-y-6">
+      {/* 検索バー */}
+      <SearchBar onSearch={handleSearch} />
 
-      <div>
-        <Arrow />
-        <button
-          onClick={handleRedirectSignin}
-          className="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition"
-        >ログインページへ
-        </button>
-        <button
-          onClick={handleRedirectSignup}
-          className="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 transition"
-        >登録(サインアップ)ページへ
-        </button>
-      </div>
-    </>
+      {/* 記事一覧（検索クエリを渡してフィルタリングなどを行う想定） */}
+      <BlogList searchQuery={searchQuery} />
+
+      {/* 必要に応じてページネーションなどを配置してもOK */}
+    </section>
   );
 }
