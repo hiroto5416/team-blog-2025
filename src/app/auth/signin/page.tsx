@@ -70,11 +70,11 @@ export default function SignInForm() {
         />
         {error && <p className="text-red-500">{error}</p>}
         <button type="submit" className="rounded bg-blue-500 p-2 text-white">
-          Sing In
+          ログイン
         </button>
         <p>
           Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="text-blue-500 underline hover:text-blue-700">
+          <Link href="/auth/SignUp" className="text-blue-500 underline hover:text-blue-700">
             Sign Up
           </Link>
         </p>

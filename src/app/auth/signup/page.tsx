@@ -80,11 +80,11 @@ export default function SignUpForm() {
         />
         {error && <p className="text-red-500">{error}</p>}
         <button type="submit" className="rounded bg-blue-500 p-2 text-white">
-          Sing Up
+          ログイン
         </button>
         <p>
           Already have an account?{' '}
-          <Link href="/auth/signin" className="text-blue-500 underline hover:text-blue-700">
+          <Link href="/auth/SignIn" className="text-blue-500 underline hover:text-blue-700">
             Login
           </Link>
         </p>
