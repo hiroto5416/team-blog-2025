@@ -19,7 +19,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       type="text"
       value={query}
       onChange={handleInputChange}
-      placeholder="検索..."
+      placeholder="Search..."
       className="w-full p-2 border border-gray-300 rounded-lg"
     />
   );
