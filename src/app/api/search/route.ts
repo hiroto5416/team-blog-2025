@@ -45,7 +45,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
   try {
-    // クエリパラメータから検索ワードを取得
     const { searchParams } = new URL(req.url);
     const query = searchParams.get('query');
 
@@ -53,24 +52,25 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: '検索ワードが必要です' }, { status: 400 });
     }
 
-    // Supabase の textSearch を使って検索
+    // 半角・全角の両方の検索ワードを取得
+    const fullWidthQuery = query.replace(/[0-9]/g, (s) =>
+      String.fromCharCode(s.charCodeAt(0) + 0xfee0),
+    );
+    const halfWidthQuery = query.replace(/[０-９]/g, (s) =>
+      String.fromCharCode(s.charCodeAt(0) - 0xfee0),
+    );
+
+    // `ilike` で完全な部分一致検索を実現
     const { data, error } = await supabase
       .from('posts')
       .select(
-        `
-        *,
-        users (
-          id,
-          name,
-          image_path
-        ),
-        categories (
-          id,
-          name
-        )
-      `,
+        `id, title, content, created_at,
+         users (id, name, image_path),
+         categories (id, name)`,
       )
-      .textSearch('title', query, { type: 'websearch' }) // タイトルで全文検索
+      .or(
+        `title.ilike.%${halfWidthQuery}%,title.ilike.%${fullWidthQuery}%,content.ilike.%${halfWidthQuery}%,content.ilike.%${fullWidthQuery}%`,
+      ) // どこかに含まれるデータを検索
       .order('created_at', { ascending: false });
 
     if (error) {
