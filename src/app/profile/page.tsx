@@ -1,8 +1,10 @@
+//app/profile/page.tsx
 "use client";
+
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import LogoutButton from "../../components/modules/auth/LogoutButton";
-import { Session } from "@supabase/auth-helpers-nextjs"; 
+import { Session } from "@supabase/auth-helpers-nextjs";
 
 const ProfilePage = () => {
   const supabase = createClientComponentClient();
@@ -18,9 +20,15 @@ const ProfilePage = () => {
   }, [supabase]);
 
   return (
-    <div>
-      {session ? <p>ログイン済み: {session.user.email}</p> : <p>未ログイン</p>}
-<LogoutButton />
+    <div className="max-w-3xl mx-auto mt-12 p-6 bg-[var(--color-card)] shadow-md rounded-lg">
+      {session ? (
+        <div className="flex flex-col items-center">
+          <h2 className="text-2xl font-bold text-[var(--color-foreground)]">{session.user.email}</h2>
+          <LogoutButton />
+        </div>
+      ) : (
+        <p className="text-center text-[var(--color-muted-foreground)]">ログインしてください</p>
+      )}
     </div>
   );
 };
