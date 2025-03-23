@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AuthInput } from '@/components/ui/custom/AuthInput';
 import Link from 'next/link';
+import Button from '@/components/ui/custom/button';
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -18,7 +19,8 @@ export default function SignUpForm() {
     setError(''); // エラーメッセージをリセット
 
     try {
-      const res = await fetch('/api/auth/signup', { // ✅ 修正: signup API を呼び出す
+      const res = await fetch('/api/auth/signup', {
+        // ✅ 修正: signup API を呼び出す
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }), // ✅ name も送信
@@ -74,9 +76,7 @@ export default function SignUpForm() {
           required
         />
         {error && <p className="text-red-500">{error}</p>}
-        <button type="submit" className="rounded bg-blue-500 p-2 text-white">
-          Sign Up {/* ✅ 修正: スペルミス修正 */}
-        </button>
+        <Button>Sign Up</Button>
         <p>
           Already have an account?{' '}
           <Link href="/auth/signin" className="text-blue-500 underline hover:text-blue-700">
