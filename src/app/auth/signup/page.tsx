@@ -13,34 +13,29 @@ export default function SignUpForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); // エラーメッセージをリセット
 
     try {
-      const res = await fetch('/api/auth/signin', {
+      const res = await fetch('/api/auth/signup', { // ✅ 修正: signup API を呼び出す
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }), // ✅ name も送信
       });
 
       if (!res.ok) {
-        // レスポンスが正常でない場合、エラーメッセージを設定
         const data = await res.json();
-        setError(data.error || 'ログインに失敗しました');
+        setError(data.error || 'サインアップに失敗しました');
         return;
       }
 
-      // レスポンスデータを受け取る
-      const data = await res.json();
+      console.log('サインアップ成功');
 
-      console.log('ログイン成功:', data);
-
-      // ログイン成功後、プロフィールページにリダイレクト
-      router.push('/profile');
+      // サインアップ成功後、ログインページへリダイレクト
+      router.push('/auth/signin');
     } catch (err: unknown) {
-      // ネットワークエラーやその他のエラーが発生した場合
-      console.error('Error during login:', err);
+      console.error('Error during signup:', err);
       setError('サーバーエラーが発生しました');
     }
   };
@@ -48,12 +43,12 @@ export default function SignUpForm() {
   return (
     <div className="mx-auto flex h-screen w-full items-center justify-center">
       <form
-        onSubmit={handleSignIn}
+        onSubmit={handleSignUp} // ✅ 修正: 正しい関数を呼び出す
         className="flex w-full max-w-2xl flex-col items-center justify-center gap-4"
       >
         <AuthInput
-          label="name"
-          name="Name"
+          label="Name"
+          name="name"
           type="text"
           placeholder="Enter your name"
           value={name}
@@ -61,8 +56,8 @@ export default function SignUpForm() {
           required
         />
         <AuthInput
-          label="email"
-          name="Email"
+          label="Email"
+          name="email"
           type="email"
           placeholder="Enter your email"
           value={email}
@@ -70,8 +65,8 @@ export default function SignUpForm() {
           required
         />
         <AuthInput
-          label="password"
-          name="Password"
+          label="Password"
+          name="password"
           type="password"
           placeholder="Enter your password"
           value={password}
@@ -80,11 +75,11 @@ export default function SignUpForm() {
         />
         {error && <p className="text-red-500">{error}</p>}
         <button type="submit" className="rounded bg-blue-500 p-2 text-white">
-          ログイン
+          Sign Up {/* ✅ 修正: スペルミス修正 */}
         </button>
         <p>
           Already have an account?{' '}
-          <Link href="/auth/SignIn" className="text-blue-500 underline hover:text-blue-700">
+          <Link href="/auth/signin" className="text-blue-500 underline hover:text-blue-700">
             Login
           </Link>
         </p>

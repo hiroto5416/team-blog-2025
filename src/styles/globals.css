@@ -1,0 +1,29 @@
+/* app/globals.css */
+
+/* Tailwind CSS v4 では最初にこれを宣言 */
+@import "tailwindcss";
+
+/* ---- カスタムレイヤーで記述 ---- */
+@layer base {
+  :root {
+    --color-background: #181818;
+    --color-card: #1e1e1e;
+    --color-foreground: #f0f0f0;
+    --color-muted: #a0a0a0;
+    --color-accent-cyan: #0ff0fc;
+    --color-accent-green: #39ff14;
+    --radius-lg: 12px;
+  }
+
+  body {
+    @apply bg-[var(--color-background)] text-[var(--color-foreground)];
+  }
+}
+
+@layer components {
+  /* 例: .card, .btn など共通クラスを定義可能 */
+}
+
+@layer utilities {
+  /* プロジェクト独自のユーティリティクラスを追加可能 */
+}
