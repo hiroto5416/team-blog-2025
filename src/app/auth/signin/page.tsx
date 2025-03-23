@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AuthInput } from '@/components/ui/custom/AuthInput';
 import Link from 'next/link';
+import Button from '@/components/ui/custom/button';
 
 export default function SignInForm() {
   const router = useRouter();
@@ -69,9 +70,7 @@ export default function SignInForm() {
           required
         />
         {error && <p className="text-red-500">{error}</p>}
-        <button type="submit" className="rounded bg-blue-500 p-2 text-white">
-          Sing In
-        </button>
+        <Button>Sing In</Button>
         <p>
           Don&apos;t have an account?{' '}
           <Link href="/auth/signup" className="text-blue-500 underline hover:text-blue-700">
