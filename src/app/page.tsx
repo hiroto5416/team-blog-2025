@@ -1,14 +1,13 @@
-//app/page.tsx
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import SearchBar from '@/components/ui/custom/search-input'; // 検索バー
-import BlogList from '@/components/modules/blog-list'; // 記事一覧
+import { SearchInput as SearchBar } from '@/components/ui/custom/search-input'; // 検索バー
 import CustomPagination from '@/components/ui/custom/pagination'; // ページネーション
 import { getBlogs } from '@/lib/api/blog';
 import { Blog } from '@/types/blog';
+// import BlogList from '@/components/modules/blog-list'; // 記事一覧
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
