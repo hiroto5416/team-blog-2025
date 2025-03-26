@@ -1,35 +1,45 @@
 //app/page.tsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import SearchBar from "@/components/ui/custom/search-input"; // 検索バー
-import BlogList from "@/components/modules/blog-list"; // 記事一覧
-import CustomPagination from "@/components/ui/custom/pagination"; // ページネーション
-
+import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import SearchBar from '@/components/ui/custom/search-input'; // 検索バー
+import BlogList from '@/components/modules/blog-list'; // 記事一覧
+import CustomPagination from '@/components/ui/custom/pagination'; // ページネーション
+import { getBlogs } from '@/lib/api/blog';
+import { Blog } from '@/types/blog';
 export default function HomePage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [blogs, setBlogs] = useState<Blog[]>([] as Blog[]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const totalPages = 10; // 仮の値 (実際はデータ件数から計算)
 
-  // 記事データ（仮）
-  const blogs = [
-    { id: "1", title: "ブログ記事1", author: "著者1", category: "Tech", timeAgo: "5 min ago", content: "ブログ記事1の内容" },
-    { id: "2", title: "ブログ記事2", author: "著者2", category: "Life", timeAgo: "10 min ago", content: "ブログ記事2の内容" },
-    { id: "3", title: "ブログ記事3", author: "著者3", category: "Travel", timeAgo: "20 min ago", content: "ブログ記事3の内容" },
-    { id: "4", title: "ブログ記事4", author: "著者4", category: "Tech", timeAgo: "30 min ago", content: "ブログ記事4の内容" },
-    { id: "5", title: "ブログ記事5", author: "著者5", category: "Health", timeAgo: "45 min ago", content: "ブログ記事5の内容" },
-    { id: "6", title: "ブログ記事6", author: "著者6", category: "Business", timeAgo: "1 hour ago", content: "ブログ記事6の内容" },
-    { id: "7", title: "ブログ記事7", author: "著者7", category: "Education", timeAgo: "2 hours ago", content: "ブログ記事7の内容" },
-    { id: "8", title: "ブログ記事8", author: "著者8", category: "Entertainment", timeAgo: "3 hours ago", content: "ブログ記事8の内容" },
-    { id: "9", title: "ブログ記事9", author: "著者9", category: "Sports", timeAgo: "4 hours ago", content: "ブログ記事9の内容" },
-  ];
+  const fetchBlogs = useCallback(async (searchQuery?: string) => {
+    try {
+      setIsLoading(true);
+      const data = await getBlogs(searchQuery);
+      setBlogs(data);
+      setError(null); // エラー状態をリセット
+    } catch (err) {
+      setError('記事の取得に失敗しました。しばらく時間をおいて再度お試しください。');
+      console.error('記事取得エラー:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBlogs(searchQuery);
+  }, [searchQuery, fetchBlogs]);
 
   // 検索入力のハンドラー
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1); // 検索時は1ページ目に戻す
+    fetchBlogs(query);
   };
 
   // ページ変更ハンドラー
@@ -37,22 +47,44 @@ export default function HomePage() {
     setCurrentPage(page);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center">
+        <p className="mb-4 text-red-500">エラー: {error}</p>
+        <button
+          onClick={() => fetchBlogs()}
+          className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+        >
+          再試行
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <section className="space-y-6 max-w-6xl mx-auto px-4 py-8">
+    <section className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       {/* 検索バー */}
       <div className="flex justify-center">
         <SearchBar onSearch={handleSearch} />
       </div>
 
       {/* 記事一覧 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {blogs.map((blog) => (
           <article
             key={blog.id}
-            className="border border-[var(--color-muted)] bg-[var(--color-card)] p-4 rounded-lg shadow-sm transition hover:shadow-md"
+            className="rounded-lg border border-[var(--color-muted)] bg-[var(--color-card)] p-4 shadow-sm transition hover:shadow-md"
           >
             <Link href={`/articledetail/${blog.id}`} className="block">
-              <div className="w-full h-60 bg-[var(--color-muted)] rounded-md flex justify-center items-center">
+              <div className="flex h-60 w-full items-center justify-center rounded-md bg-[var(--color-muted)]">
                 <Image
                   src="/images/placeholder.jpg"
                   width={200}
@@ -62,19 +94,17 @@ export default function HomePage() {
                 />
               </div>
             </Link>
-            <div className="mt-4 relative">
+            <div className="relative mt-4">
               {/* タイトルとカテゴリ */}
-              <h2 className="text-lg font-semibold text-[var(--color-foreground)]">
-                {blog.title}
-              </h2>
+              <h2 className="text-lg font-semibold text-[var(--color-foreground)]">{blog.title}</h2>
               <span className="absolute top-0 right-0 text-sm text-[var(--color-accent-blue)]">
-                {blog.category}
+                {blog.categories.name}
               </span>
 
               {/* 著者と時間 */}
-              <div className="flex justify-start space-x-2 text-sm text-[var(--color-muted-foreground)] mt-1">
-                <p>By {blog.author}</p>
-                <p>• {blog.timeAgo}</p>
+              <div className="mt-1 flex justify-start space-x-2 text-sm text-[var(--color-muted-foreground)]">
+                <p>By {blog.users.name}</p>
+                <p>• {new Date(blog.created_at).toLocaleDateString()}</p>
               </div>
 
               {/* 記事の概要 */}
@@ -83,7 +113,10 @@ export default function HomePage() {
               </p>
 
               {/* 記事へのリンク */}
-              <Link href={`/articledetail/${blog.id}`} className="text-[var(--color-accent-cyan)] mt-2 inline-block">
+              <Link
+                href={`/articledetail/${blog.id}`}
+                className="mt-2 inline-block text-[var(--color-accent-cyan)]"
+              >
                 記事を読む →
               </Link>
             </div>
@@ -92,7 +125,7 @@ export default function HomePage() {
       </div>
 
       {/* ページネーション */}
-      <div className="flex justify-between items-center mt-6">
+      <div className="mt-6 flex items-center justify-between">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
