@@ -89,52 +89,108 @@ export async function POST(request: Request) {
  * 記事一覧を取得するエンドポイント
  *
  * @remarks
- * - 全ての記事データを取得
+ * - 記事データを取得（全件またはページネーションあり）
  * - ユーザー情報とカテゴリー情報も合わせて取得
  * - 作成日時の降順でソート
  *
- * @returns 記事一覧データ
+ * @param request - リクエストオブジェクト
+ *   - `page`: ページ番号（省略時は全件取得）
+ *   - `limit`: 1ページあたりの記事数（省略時は全件取得）
+ *
+ * @returns 記事一覧データ（ページネーション情報を含む場合あり）
  *
  * @example
- * ```
- * // レスポンスの例
+ * ```json
+ * // 全件取得時のレスポンス例
  * [
  *   {
- *     id: 1,
- *     title: "記事タイトル",
- *     content: "記事本文",
- *     image_path: "https://...",
- *     created_at: "2024-02-20T...",
- *     users: {
- *       id: "xxx",
- *       name: "ユーザー名"
+ *     "id": 1,
+ *     "title": "記事タイトル",
+ *     "content": "記事本文",
+ *     "image_path": "https://...",
+ *     "created_at": "2024-02-20T...",
+ *     "users": {
+ *       "id": "xxx",
+ *       "name": "ユーザー名"
  *     },
- *     categories: {
- *       id: 1,
- *       name: "カテゴリー名"
+ *     "categories": {
+ *       "id": 1,
+ *       "name": "カテゴリー名"
  *     }
  *   },
  *   ...
  * ]
+ *
+ * // ページネーション適用時のレスポンス例
+ * {
+ *   "posts": [
+ *     {
+ *       "id": 1,
+ *       "title": "記事タイトル",
+ *       "content": "記事本文",
+ *       "image_path": "https://...",
+ *       "created_at": "2024-02-20T...",
+ *       "users": {
+ *         "id": "xxx",
+ *         "name": "ユーザー名"
+ *       },
+ *       "categories": {
+ *         "id": 1,
+ *         "name": "カテゴリー名"
+ *       }
+ *     },
+ *     ...
+ *   ],
+ *   "total": 100,
+ *   "totalPages": 10,
+ *   "currentPage": 1
+ * }
  * ```
  */
-export async function GET() {
+
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const page = searchParams.has('page') ? Number(searchParams.get('page')) : null;
+    const limit = searchParams.has('limit') ? Number(searchParams.get('limit')) : null;
+
+    // パラメータによる範囲記事取得
+    if (page !== null && limit !== null) {
+      const start = (page - 1) * limit;
+      const end = start + limit - 1;
+      const { data, error, count } = await supabase
+        .from('posts')
+        .select(
+          `*,
+          users ( id, name, image_path ),
+          categories ( id, name )`,
+          { count: 'exact' },
+        )
+        .order('created_at', { ascending: false })
+        .range(start, end);
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+
+      return NextResponse.json(
+        {
+          posts: data,
+          total: count,
+          totalPages: count !== null ? Math.ceil(count / limit) : 0,
+          currentPage: page,
+        },
+        { status: 200 },
+      );
+    }
+
+    // 全記事取得
     const { data, error } = await supabase
       .from('posts')
       .select(
-        `
-        *,
-        users (
-          id,
-          name,
-          image_path
-      ),
-      categories (
-        id,
-        name
-        )
-      `,
+        `*,
+        users ( id, name, image_path ),
+        categories ( id, name )`,
       )
       .order('created_at', { ascending: false });
 
