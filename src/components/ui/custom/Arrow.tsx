@@ -1,73 +1,96 @@
-'use client';
+//src/components/ui/custom/Arrow.tsx
 
-import Image from 'next/image';
-import { useState } from 'react';
+"use client";
 
-export function Arrow() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isDragOver, setIsDragOver] = useState<boolean>(false);
+import Image from "next/image";
+import { useRef, useState } from "react";
+import { Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-  // ドラッグオーバー時の処理
+type ArrowProps = {
+  previewSrc: string | null;
+  onDropFile: (file: File) => void;
+  onRemove: () => void;
+};
+
+export function Arrow({ previewSrc, onDropFile, onRemove }: ArrowProps) {
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(true);
   };
 
-  // ドラッグアウト時の処理
   const handleDragLeave = () => {
     setIsDragOver(false);
   };
 
-  // ドロップ時の処理
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const file = e.dataTransfer.files ? e.dataTransfer.files[0] : null;
-    setSelectedFile(file);
+    const file = e.dataTransfer.files?.[0];
+    if (file) onDropFile(file);
     setIsDragOver(false);
   };
 
-  // ボタン押下時の処理
-  const handleSubmit = () => {
-    if (selectedFile) {
-      console.log('ファイルアップロード：' + selectedFile.name);
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onDropFile(file);
   };
+
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
-    <>
-      <div
-        className={`relative flex h-80 w-full max-w-2xl flex-col items-center justify-center border-2 border-dashed ${isDragOver ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        {selectedFile ? (
+    <div
+      className={`relative flex h-64 w-full max-w-3xl cursor-pointer flex-col items-center justify-center border-2 border-dashed rounded-lg transition-colors duration-200 ${
+        isDragOver ? "border-[var(--color-accent-cyan)] bg-[var(--color-accent-cyan)/0.1]" : "border-[var(--color-muted)] bg-[var(--color-background)]"
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onClick={handleClick}
+      contentEditable={false}
+    >
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {previewSrc ? (
+        <>
           <Image
-            src={URL.createObjectURL(selectedFile)} // ドロップしたファイルを表示
-            alt="Uploaded Image"
-            width={250}
-            height={250}
-            className="absolute"
+            src={previewSrc}
+            alt="Uploaded Preview"
+            fill
+            className="object-cover rounded-lg"
           />
-        ) : (
-          <div className="text-center text-gray-500">
-            <p>画像をドラッグ＆ドロップしてください</p>
-          </div>
-        )}
-      </div>
-      <div>
-        <button
-          onClick={handleSubmit}
-          disabled={!selectedFile}
-          className="rounded-lg bg-blue-500 px-4 py-2 text-white disabled:opacity-50"
-        >
-          ボタン
-        </button>
-      </div>
-      {/* {selectedFile && (
-        <div className="mt-2 text-sm text-gray-700">
-          <strong>選択されたファイル:</strong> {selectedFile.name}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+            className="absolute top-2 right-2 bg-red-600 text-white text-sm px-2 py-1 rounded hover:bg-red-700 transition-colors"
+          >
+            削除
+          </button>
+        </>
+      ) : (
+        <div className="text-center text-[var(--color-muted-foreground)] flex flex-col items-center pointer-events-none">
+          <Upload className="text-[var(--color-muted)]" size={48} />
+          <Button
+            variant="outline"
+            className="mt-2 pointer-events-auto border border-[var(--color-accent-cyan)] text-[var(--color-accent-cyan)] hover:bg-[var(--color-accent-cyan)] hover:text-white px-6 py-2 rounded-full transition-colors duration-200"
+          >
+            Upload Image
+          </Button>
         </div>
-      )} */}
-    </>
+      )}
+    </div>
   );
 }
