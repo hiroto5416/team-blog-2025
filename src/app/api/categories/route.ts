@@ -45,13 +45,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'ログインしてください' }, { status: 401 });
   }
 
-  // `created_at` と `updated_at` を現在の日時で設定
-  const now = new Date().toISOString();
+  // `created_at` と `updated_at` を日本時間（JST, UTC+9）で設定
+  const now = new Date();
+  const nowJST = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString(); // UTC+9に変換
 
   // カテゴリを追加
   const { data, error } = await supabase
     .from('category')
-    .insert({ name, created_at: now, updated_at: now })
+    .insert({ name, created_at: nowJST, updated_at: nowJST })
     .select();
 
   if (error) {
