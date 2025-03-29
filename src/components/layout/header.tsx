@@ -1,57 +1,53 @@
-// components/layout/header.tsx
+// src/components/layout/header.tsx
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react"; // ✅ 本番用に戻した
+import Button from "@/components/ui/custom/button";
+import { UserMenu } from "@/components/modules/user-menu";
 
 export default function Header() {
-  const { data: session } = useSession(); // 認証状態取得
+  const { data: session } = useSession(); // ✅ 実際のセッション取得
 
   return (
-    <header className="w-full bg-[var(--color-card)] text-[var(--color-foreground)] border-b border-[var(--color-muted)]">
-      <nav className="w-full flex items-center justify-between px-6 py-4">
+    <header className="w-full border-b border-[var(--color-muted)] bg-[var(--color-card)] text-[var(--color-foreground)]">
+      <nav className="flex w-full items-center justify-between px-4 sm:px-6 py-4">
         {/* 左側：ロゴ */}
-        <Link href="/" className="text-2xl font-bold text-[var(--color-accent-cyan)]">
+        <Link
+          href="/"
+          className="text-2xl font-bold text-[var(--color-accent-blue)] hover:opacity-80 transition"
+        >
           BugDB
         </Link>
 
-        {/* 右側：認証状態による表示 */}
-        <div className="flex items-center space-x-6">
+        {/* 右側：ログイン状態によって表示切替 */}
+        <div className="flex items-center gap-4">
           {session ? (
             <>
-              {/* 記事作成リンク */}
-              <Link
-                href="/articlecreate"
-                className="bg-[var(--color-accent-green)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-accent-green-dark)] transition-colors"
-              >
-                Create
+              {/* Createボタン：モノトーン→ホバーでグリーン */}
+              <Link href="/articlecreate">
+                <Button className="border border-[var(--color-muted-foreground)] bg-transparent text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent-green)] hover:text-white transition-colors">
+                  Create
+                </Button>
               </Link>
 
-              {/* プロフィールアイコン */}
-              <Link href="/profile">
-                <Image
-                  src={session.user?.image || "/images/dummy-user.png"}
-                  alt="User Icon"
-                  width={32}
-                  height={32}
-                  className="rounded-full hover:opacity-80 transition"
-                />
-              </Link>
+              {/* ユーザーメニュー */}
+              <UserMenu
+                userImage={session.user?.image}
+                userEmail={session.user?.email ?? ""}
+              />
             </>
           ) : (
             <>
-              <Link
-                href="/auth/signin"
-                className="bg-[var(--color-accent-green)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-accent-green-dark)] transition-colors"
-              >
-                Login
+              <Link href="/auth/signin">
+                <Button className="bg-transparent border border-[var(--color-accent-green)] text-[var(--color-accent-green)] hover:bg-[var(--color-accent-green)] hover:text-white">
+                  Login
+                </Button>
               </Link>
-              <Link
-                href="/auth/signup"
-                className="bg-[var(--color-accent-blue)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-accent-blue-dark)] transition-colors"
-              >
-                Sign Up
+              <Link href="/auth/signup">
+                <Button className="bg-[var(--color-accent-blue)] text-white hover:bg-[var(--color-accent-blue-dark)]">
+                  Sign Up
+                </Button>
               </Link>
             </>
           )}
