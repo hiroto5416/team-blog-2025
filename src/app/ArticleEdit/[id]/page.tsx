@@ -1,29 +1,33 @@
-// app/ArticleEdit/[id]/page.tsx
+// src/app/articleedit/[id]/page.tsx
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
-import { Upload } from "lucide-react";
-import Image from "next/image";
+import Input from "@/components/ui/custom/input";
+import { CustomTextarea } from "@/components/ui/custom/CustomTextarea";
+import { CreateButton } from "@/components/ui/custom/CreateButton";
+import { CategorySelect } from "@/components/ui/custom/CategorySelect";
+import { Arrow } from "@/components/ui/custom/Arrow"; // Arrowを使用
 
 // ダミーデータ（仮のデフォルト記事）
 const dummyArticles = {
   "101": {
     title: "ユーザ記事1",
-    category: "雑記",
+    category: "Programming",
     content: "これはユーザ記事1の本文です。",
     imageUrl: "/images/placeholder.jpg",
   },
   "102": {
     title: "ユーザ記事2",
-    category: "プログラミング",
+    category: "Design",
     content: "これはユーザ記事2の本文です。",
     imageUrl: "/images/placeholder.jpg",
   },
 };
 
 export default function EditBlogPage() {
-  const { id } = useParams(); // ルートパラメータ取得
+  const { id } = useParams();
   const article = dummyArticles[id as keyof typeof dummyArticles] || {
     title: "",
     category: "",
@@ -36,83 +40,53 @@ export default function EditBlogPage() {
   const [content, setContent] = useState(article.content);
   const [previewSrc, setPreviewSrc] = useState<string | null>(article.imageUrl);
 
-  // 画像アップロード処理
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewSrc(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleUpdate = () => {
     console.log("更新データ:", { title, category, content, previewSrc });
     alert("記事が更新されました！（ダミー）");
   };
 
   return (
-    <section className="space-y-8">
-      <h1 className="text-3xl font-bold text-[var(--color-foreground)]">Edit Article</h1>
-
-      {/* 画像アップロード */}
-      <div className="relative w-full h-64 border-2 border-dashed border-[var(--color-muted)] rounded-lg flex flex-col items-center justify-center">
-        {!previewSrc ? (
-          <label className="cursor-pointer flex flex-col items-center">
-            <Upload className="text-[var(--color-muted)]" size={48} />
-            <span className="text-[var(--color-accent-cyan)] mt-2 text-lg">Upload Image</span>
-            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-          </label>
-        ) : (
-          <div className="w-full h-full relative">
-            <Image src={previewSrc} alt="Preview" fill className="object-cover rounded-lg" />
-            <button
-              onClick={() => setPreviewSrc(null)}
-              className="absolute top-2 right-2 text-sm bg-red-600 text-white px-2 py-1 rounded"
-            >
-              削除
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* カテゴリー選択 */}
-      <div className="flex justify-end">
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="p-2 rounded bg-[var(--color-card)] border border-[var(--color-muted)] text-[var(--color-foreground)]"
-        >
-          <option value="">Category</option>
-          <option value="Programming">Programming</option>
-          <option value="Design">Design</option>
-          <option value="Life">Life</option>
-        </select>
-      </div>
-
+    <section className="max-w-3xl mx-auto space-y-6 p-4">
       {/* タイトル入力 */}
-      <input
-        className="w-full p-2 rounded bg-[var(--color-card)] border border-[var(--color-muted)] text-[var(--color-foreground)]"
-        placeholder="記事タイトル"
+      <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        placeholder="Title |"
+        className="text-3xl font-bold placeholder:text-muted"
       />
 
-      {/* 本文入力 */}
-      <textarea
-        className="w-full h-40 p-2 rounded bg-[var(--color-card)] border border-[var(--color-muted)] text-[var(--color-foreground)]"
-        placeholder="本文を入力..."
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-      ></textarea>
+      {/* 画像アップロード - Arrowを使用 */}
+      <Arrow
+        previewSrc={previewSrc}
+        onDropFile={(file) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setPreviewSrc(reader.result as string);
+          };
+          reader.readAsDataURL(file);
+        }}
+        onRemove={() => setPreviewSrc(null)}
+      />
+
+      {/* 本文 + カテゴリ */}
+      <div className="relative">
+        <div className="rounded-xl bg-[var(--color-card)] text-[var(--color-foreground)] border border-[var(--color-muted)] p-4">
+          <div className="absolute top-6 right-6 z-10">
+            <CategorySelect value={category} onChange={setCategory} />
+          </div>
+
+          <CustomTextarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="本文を入力..."
+            className="h-48"
+          />
+        </div>
+      </div>
 
       {/* 更新ボタン */}
       <div className="flex justify-end">
-        <button onClick={handleUpdate} className="px-6 py-2 bg-[var(--color-accent-green)] text-black font-bold rounded-lg">
-          Update
-        </button>
+        <CreateButton onClick={handleUpdate}>Edit</CreateButton>
       </div>
     </section>
   );
