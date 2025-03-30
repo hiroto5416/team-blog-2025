@@ -10,7 +10,12 @@ interface CustomButtonProps extends React.ComponentProps<typeof ShadcnButton> {}
 export default function Button({ className, ...props }: CustomButtonProps) {
   return (
     <ShadcnButton
-      className={cn("bg-[var(--color-accent-green)] text-black font-semibold", className)}
+      className={cn(
+        "bg-[var(--color-accent-green)] text-black font-semibold",
+        "border border-gray-300 hover:border-[var(--color-accent-blue-dark)]", // 枠線追加
+        "px-4 py-2 rounded transition-colors",
+        className
+      )}
       {...props}
     />
   );
