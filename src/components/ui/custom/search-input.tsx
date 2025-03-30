@@ -6,47 +6,29 @@ import { useState } from 'react';
 // import { cn } from '@/lib/utils';
 
 interface SearchInputProps {
-  onSearch: (query: string) => void;
-  onEnterPress?: () => void;
   value?: string;
-  onChange?: (value: string) => void;
+  onChange?: (query: string) => void;
+  onEnterPress?: () => void;
+  onSearch?: () => void;
 }
 
-export function SearchInput({ onSearch, onEnterPress, value, onChange }: SearchInputProps) {
-  const [localSearchText, setLocalSearchText] = useState<string>('');
-  const [isComposing, setIsComposing] = useState(false);
-  const searchText = value ?? localSearchText;
+export function SearchInput({ onSearch }: SearchInputProps) {
+  const [searchText, setSearchText] = useState<string>('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    if (onChange) {
-      onChange(newValue);
-    } else {
-      setLocalSearchText(newValue);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !isComposing) {
-      if (onEnterPress) {
-        onEnterPress();
-      } else {
-        onSearch(searchText);
-      }
-    }
+  const handleSearchClick = (): void => {
+    if (!searchText.trim() || !onSearch) return;
+    onSearch();
   };
 
   return (
     <div className="flex w-full items-center justify-center space-x-2">
       <Input
         type="text"
-        placeholder="キーワードを入力..."
+        placeholder="Search..."
         className="h-11 w-full rounded-lg border border-gray-300 bg-transparent p-2 text-[var(--color-foreground)]"
         value={searchText}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onCompositionStart={() => setIsComposing(true)}
-        onCompositionEnd={() => setIsComposing(false)}
+        onChange={(e) => setSearchText(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
       />
     </div>
   );

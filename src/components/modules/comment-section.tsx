@@ -14,7 +14,11 @@ interface Comment {
   createdAt: string;
 }
 
-export default function CommentSection() {
+interface CommentSectionProps {
+  blogId: string; // Will be used for API integration to fetch and post comments
+}
+
+export default function CommentSection({ blogId }: CommentSectionProps) {
   const [commentList, setCommentList] = useState<Comment[]>([
     {
       id: "1",
