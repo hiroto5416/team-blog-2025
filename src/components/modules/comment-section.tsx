@@ -59,7 +59,11 @@ export default function CommentSection() {
           placeholder="コメントを入力..."
           className="flex-1"
         />
-        <Button onClick={handleAddComment} className="bg-[var(--color-accent-green)] text-black">
+        <Button
+          type="submit"
+          className="bg-[rgb(0,255,76)] text-white hover:bg-transparent hover:text-white"
+          onClick={handleAddComment}
+        >
           送信
         </Button>
       </div>
