@@ -11,7 +11,7 @@ import { Blog } from '@/types/blog';
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [blogs, setBlogs] = useState<Blog[]>([] as Blog[]);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const totalPages = 10; // 仮の値 (実際はデータ件数から計算)
@@ -19,12 +19,12 @@ export default function HomePage() {
   const fetchBlogs = useCallback(async (searchQuery?: string) => {
     try {
       setIsLoading(true);
+      setError(null);
       const data = await getBlogs(searchQuery);
       setBlogs(data);
-      setError(null); // エラー状態をリセット
     } catch (err) {
-      setError('記事の取得に失敗しました。しばらく時間をおいて再度お試しください。');
       console.error('記事取得エラー:', err);
+      setError('記事の取得に失敗しました。しばらく時間をおいて再度お試しください。');
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +38,6 @@ export default function HomePage() {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1); // 検索時は1ページ目に戻す
-    fetchBlogs(query);
   };
 
   // ページ変更ハンドラー
@@ -85,7 +84,7 @@ export default function HomePage() {
             <Link href={`/articledetail/${blog.id}`} className="block">
               <div className="flex h-60 w-full items-center justify-center rounded-md bg-[var(--color-muted)]">
                 <Image
-                  src="/images/placeholder.jpg"
+                  src={blog.image_path || '/images/placeholder.jpg'}
                   width={200}
                   height={150}
                   className="rounded-md object-cover"
@@ -97,18 +96,18 @@ export default function HomePage() {
               {/* タイトルとカテゴリ */}
               <h2 className="text-lg font-semibold text-[var(--color-foreground)]">{blog.title}</h2>
               <span className="absolute top-0 right-0 text-sm text-[var(--color-accent-blue)]">
-                {blog.categories.name}
+                {blog.category?.name || '未分類'}
               </span>
 
               {/* 著者と時間 */}
               <div className="mt-1 flex justify-start space-x-2 text-sm text-[var(--color-muted-foreground)]">
-                <p>By {blog.users.name}</p>
+                <p>By {blog.users?.name || 'Unknown'}</p>
                 <p>• {new Date(blog.created_at).toLocaleDateString()}</p>
               </div>
 
               {/* 記事の概要 */}
               <p className="mt-2 text-[var(--color-foreground)]">
-                {blog.content.substring(0, 100)}...
+                {blog.content?.substring(0, 100) || ''}...
               </p>
 
               {/* 記事へのリンク */}

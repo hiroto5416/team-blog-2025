@@ -6,16 +6,23 @@ import { Blog } from '@/types/blog';
  * @returns 記事一覧
  */
 export async function getBlogs(searchQuery?: string): Promise<Blog[]> {
-  const url = searchQuery
-    ? `/api/search?query=${encodeURIComponent(searchQuery)}`
-    : '/api/articles';
+  try {
+    const url = searchQuery
+      ? `/api/search?query=${encodeURIComponent(searchQuery)}`
+      : '/api/articles';
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('記事の取得に失敗しました');
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || '記事の取得に失敗しました');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Blog fetch error:', error);
+    throw error;
   }
-
-  return response.json();
 }
 
 /**
@@ -24,12 +31,20 @@ export async function getBlogs(searchQuery?: string): Promise<Blog[]> {
  * @returns 記事
  */
 export async function createBlog(formData: FormData): Promise<Blog> {
-  const response = await fetch('/api/articles', {
-    method: 'POST',
-    body: formData,
-  });
-  if (!response.ok) {
-    throw new Error('記事の作成に失敗しました');
+  try {
+    const response = await fetch('/api/articles', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || '記事の作成に失敗しました');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Blog creation error:', error);
+    throw error;
   }
-  return response.json();
 }

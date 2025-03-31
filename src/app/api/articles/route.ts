@@ -148,58 +148,38 @@ export async function POST(request: Request) {
  * ```
  */
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const page = searchParams.has('page') ? Number(searchParams.get('page')) : null;
-    const limit = searchParams.has('limit') ? Number(searchParams.get('limit')) : null;
-
-    // パラメータによる範囲記事取得
-    if (page !== null && limit !== null) {
-      const start = (page - 1) * limit;
-      const end = start + limit - 1;
-      const { data, error, count } = await supabase
-        .from('posts')
-        .select(
-          `*,
-          users ( id, name, image_path ),
-          categories ( id, name )`,
-          { count: 'exact' },
-        )
-        .order('created_at', { ascending: false })
-        .range(start, end);
-
-      if (error) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
-      }
-
-      return NextResponse.json(
-        {
-          posts: data,
-          total: count,
-          totalPages: count !== null ? Math.ceil(count / limit) : 0,
-          currentPage: page,
-        },
-        { status: 200 },
-      );
-    }
-
-    // 全記事取得
     const { data, error } = await supabase
       .from('posts')
       .select(
-        `*,
-        users ( id, name, image_path ),
-        categories ( id, name )`,
+        `
+        *,
+        users (
+          id,
+          name,
+          image_path
+        ),
+        category (
+          id,
+          name
+        )
+      `,
       )
       .order('created_at', { ascending: false });
 
     if (error) {
+      console.error('Supabase error:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json(data, { status: 200 });
-  } catch {
+    if (!data) {
+      return NextResponse.json({ error: '記事が見つかりません' }, { status: 404 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Server error:', error);
     return NextResponse.json({ error: '内部サーバーエラー' }, { status: 500 });
   }
 }
