@@ -1,15 +1,18 @@
-'use client';
+//app/page.tsx
+"use client";
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { SearchInput as SearchBar } from '@/components/ui/custom/search-input'; // 検索バー
-import CustomPagination from '@/components/ui/custom/pagination'; // ページネーション
+import { SearchInput } from '@/components/ui/custom/search-input';
+import CustomPagination from '@/components/ui/custom/pagination';
 import { getBlogs } from '@/lib/api/blog';
 import { Blog } from '@/types/blog';
-// import BlogList from '@/components/modules/blog-list'; // 記事一覧
+import Button from '@/components/ui/custom/button';
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchInputValue, setSearchInputValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [blogs, setBlogs] = useState<Blog[]>([] as Blog[]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,11 +37,16 @@ export default function HomePage() {
     fetchBlogs(searchQuery);
   }, [searchQuery, fetchBlogs]);
 
+  // 検索実行
+  const executeSearch = () => {
+    setSearchQuery(searchInputValue);
+    setCurrentPage(1); // 検索時は1ページ目に戻す
+    fetchBlogs(searchInputValue);
+  };
+
   // 検索入力のハンドラー
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1); // 検索時は1ページ目に戻す
-    fetchBlogs(query);
+    setSearchInputValue(query);
   };
 
   // ページ変更ハンドラー
@@ -69,14 +77,46 @@ export default function HomePage() {
   }
 
   return (
-    <section className="mx-auto max-w-6xl space-y-6 px-4 py-8">
+    <main className="max-w-6xl mx-auto px-4 py-8">
+      {/* ヘッダー部分 */}
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-[var(--color-foreground)]">
+          記事一覧
+        </h1>
+        <Button
+          onClick={() => {
+            // TODO: ログイン状態の確認とリダイレクト処理を実装
+            const isLoggedIn = false; // 仮の実装。実際にはログイン状態を確認する
+            if (isLoggedIn) {
+              window.location.href = '/articlecreate'; // 記事作成ページへ
+            } else {
+              window.location.href = '/login'; // ログインページへ
+            }
+          }}
+          className="bg-[rgb(0,255,76)] text-white hover:bg-transparent hover:text-white"
+        >
+          新規登録
+        </Button>
+      </div>
+
       {/* 検索バー */}
-      <div className="flex justify-center">
-        <SearchBar onSearch={handleSearch} />
+      <div className="mb-8 flex w-full items-center justify-center space-x-2">
+        <SearchInput
+          value={searchInputValue}
+          onChange={handleSearch}
+          onEnterPress={executeSearch}
+          onSearch={executeSearch}
+        />
+        <Button
+          onClick={executeSearch}
+          className="h-11 bg-[rgb(0,255,76)] text-white hover:bg-transparent hover:text-white"
+        >
+          検索
+        </Button>
       </div>
 
       {/* 記事一覧 */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
         {blogs.map((blog) => (
           <article
             key={blog.id}
@@ -147,6 +187,6 @@ export default function HomePage() {
           Next Page →
         </button>
       </div>
-    </section>
+    </main>
   );
 }
