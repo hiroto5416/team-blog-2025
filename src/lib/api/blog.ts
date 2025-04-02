@@ -1,15 +1,20 @@
-import { Blog } from '@/types/blog';
+import { Blog, BlogAllData } from '@/types/blog';
 
 /**
  * 記事一覧の取得
  * @param searchQuery - 検索クエリ
  * @returns 記事一覧
  */
-export async function getBlogs(searchQuery?: string): Promise<Blog[]> {
+export async function getBlogs(
+  searchQuery?: string,
+  page?: number,
+  limit?: number,
+): Promise<BlogAllData> {
   try {
+    const pageQuery = `page=${encodeURIComponent(page || '')}&limit=${encodeURIComponent(limit || '')}`;
     const url = searchQuery
-      ? `/api/search?query=${encodeURIComponent(searchQuery)}`
-      : '/api/articles';
+      ? `/api/search?query=${encodeURIComponent(searchQuery)}&${pageQuery}`
+      : `/api/articles?${pageQuery}`;
 
     const response = await fetch(url);
     if (!response.ok) {

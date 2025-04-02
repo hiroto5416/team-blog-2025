@@ -1,5 +1,5 @@
 //app/page.tsx
-"use client";
+'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
@@ -11,20 +11,24 @@ import { Blog } from '@/types/blog';
 import Button from '@/components/ui/custom/button';
 
 export default function HomePage() {
+  const limit = 2; // 1ページに表示する件数
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInputValue, setSearchInputValue] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [blogs, setBlogs] = useState<Blog[]>([]);
+
+  const [totalPages, setTotalPages] = useState<number>(1); // 総ページ数を状態として管理
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const totalPages = 10; // 仮の値 (実際はデータ件数から計算)
 
-  const fetchBlogs = useCallback(async (searchQuery?: string) => {
+  const fetchBlogs = useCallback(async (searchQuery?: string, currentPage: number = 1) => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getBlogs(searchQuery);
-      setBlogs(data);
+
+      const allData = await getBlogs(searchQuery, currentPage, limit);
+      setBlogs(allData.posts);
+      setTotalPages(allData.totalPages);
     } catch (err) {
       console.error('記事取得エラー:', err);
       setError('記事の取得に失敗しました。しばらく時間をおいて再度お試しください。');
@@ -34,8 +38,8 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    fetchBlogs(searchQuery);
-  }, [searchQuery, fetchBlogs]);
+    fetchBlogs(searchQuery, currentPage); // 検索クエリと現在のページを渡す
+  }, [searchQuery, currentPage]);
 
   // 検索実行
   const executeSearch = () => {
@@ -77,12 +81,10 @@ export default function HomePage() {
   }
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8">
+    <main className="mx-auto max-w-6xl px-4 py-8">
       {/* ヘッダー部分 */}
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[var(--color-foreground)]">
-          記事一覧
-        </h1>
+        <h1 className="text-3xl font-bold text-[var(--color-foreground)]">記事一覧</h1>
         <Button
           onClick={() => {
             // TODO: ログイン状態の確認とリダイレクト処理を実装
@@ -165,27 +167,11 @@ export default function HomePage() {
 
       {/* ページネーション */}
       <div className="mt-6 flex items-center justify-between">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="text-[var(--color-accent-cyan)] disabled:text-[var(--color-muted-foreground)]"
-        >
-          ← Previous Page
-        </button>
-
         <CustomPagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />
-
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="text-[var(--color-accent-cyan)] disabled:text-[var(--color-muted-foreground)]"
-        >
-          Next Page →
-        </button>
       </div>
     </main>
   );
