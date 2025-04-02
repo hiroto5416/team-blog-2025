@@ -47,6 +47,8 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get('query');
+    const pageParam = searchParams.get('page');
+    const limitParam = searchParams.get('limit');
 
     if (!query) {
       return NextResponse.json({ error: '検索ワードが必要です' }, { status: 400 });
@@ -60,24 +62,38 @@ export async function GET(req: NextRequest) {
       String.fromCharCode(s.charCodeAt(0) - 0xfee0),
     );
 
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
+    const limit = limitParam ? parseInt(limitParam, 10) : 10;
+    const offset = (page - 1) * limit;
+
     // `ilike` で完全な部分一致検索を実現
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from('posts')
       .select(
         `id, title, content, created_at,
          users (id, name, image_path),
          category (id, name)`,
+        { count: 'exact' },
       )
       .or(
         `title.ilike.%${halfWidthQuery}%,title.ilike.%${fullWidthQuery}%,content.ilike.%${halfWidthQuery}%,content.ilike.%${fullWidthQuery}%`,
       ) // どこかに含まれるデータを検索
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(
+      {
+        posts: data,
+        total: count,
+        totalPages: Math.ceil((count || 0) / limit),
+        currentPage: page,
+      },
+      { status: 200 },
+    );
   } catch {
     return NextResponse.json({ error: '内部サーバーエラー' }, { status: 500 });
   }

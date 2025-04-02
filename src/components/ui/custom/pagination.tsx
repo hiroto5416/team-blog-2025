@@ -1,7 +1,5 @@
 // components/ui/custom/pagination.tsx
-"use client";
-
-import { useMemo } from "react";
+'use client';
 
 interface PaginationProps {
   currentPage: number;
@@ -14,29 +12,55 @@ export default function CustomPagination({
   totalPages,
   onPageChange,
 }: PaginationProps) {
-  const pages = useMemo(
-    () => Array.from({ length: totalPages }, (_, i) => i + 1),
-    [totalPages]
-  );
+  if (totalPages <= 1) return null; // 記事がゼロ、または1ページのみなら非表示
+
+  const maxPagesToShow = 10; // 最大表示ページ数
+  const pageNumbers = Array.from(new Set([1, totalPages])); // 1と最後のページは常に表示
+
+  // 現在のページを中心にページを取得
+  let startPage = Math.max(2, currentPage - Math.floor((maxPagesToShow - 2) / 2));
+  let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 3);
+
+  // 末尾に近い場合、startPage を調整
+  if (endPage === totalPages - 1) {
+    startPage = Math.max(2, totalPages - (maxPagesToShow - 2));
+  }
+
+  // ページリストを作成
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i);
+  }
+
+  // 省略記号の追加
+  const finalPageNumbers = [];
+  let lastPage = 0;
+  for (let page of pageNumbers.sort((a, b) => a - b)) {
+    if (lastPage && page - lastPage > 1) {
+      finalPageNumbers.push('...');
+    }
+    finalPageNumbers.push(page);
+    lastPage = page;
+  }
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="mx-auto flex items-center space-x-2">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-3 py-1 bg-[var(--color-card)] text-[var(--color-foreground)] rounded hover:bg-[var(--color-accent-green)] disabled:opacity-50"
+        className="rounded bg-[var(--color-card)] px-3 py-1 text-[var(--color-foreground)] hover:bg-[var(--color-accent-green)] disabled:opacity-50"
       >
-        &lt; Prev
+        ← Previous Page
       </button>
-      {pages.map((p) => (
+      {finalPageNumbers.map((p) => (
         <button
           key={p}
-          onClick={() => onPageChange(p)}
-          className={`px-3 py-1 rounded ${
+          onClick={() => typeof p === 'number' && onPageChange(p)}
+          disabled={typeof p !== 'number'}
+          className={`rounded px-3 py-1 ${
             currentPage === p
-              ? "bg-[var(--color-accent-green)] text-black"
-              : "bg-[var(--color-card)] text-[var(--color-foreground)] hover:bg-[var(--color-accent-green)] hover:text-black"
-          }`}
+              ? 'bg-[var(--color-accent-green)] text-black'
+              : 'bg-[var(--color-card)] text-[var(--color-foreground)]'
+          } ${typeof p === 'number' ? 'cursor-pointer hover:bg-[var(--color-accent-green)] hover:text-black' : ''} }`}
         >
           {p}
         </button>
@@ -44,9 +68,9 @@ export default function CustomPagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="px-3 py-1 bg-[var(--color-card)] text-[var(--color-foreground)] rounded hover:bg-[var(--color-accent-green)] disabled:opacity-50"
+        className="rounded bg-[var(--color-card)] px-3 py-1 text-[var(--color-foreground)] hover:bg-[var(--color-accent-green)] disabled:opacity-50"
       >
-        Next &gt;
+        Next Page →
       </button>
     </div>
   );
