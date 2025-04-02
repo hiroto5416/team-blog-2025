@@ -1,9 +1,8 @@
 // app/clientLayout.tsx
-"use client";
+'use client';
 
-import { SessionProvider } from "next-auth/react";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
+import Header from '@/components/layout/header';
+import Footer from '@/components/layout/footer';
 
 /**
  * グローバルヘッダー＆フッターを含むレイアウト。
@@ -12,10 +11,10 @@ import Footer from "@/components/layout/footer";
  */
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <>
       <Header />
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-8">{children}</main>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
       <Footer />
-    </SessionProvider>
+    </>
   );
 }
