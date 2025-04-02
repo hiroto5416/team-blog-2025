@@ -14,7 +14,11 @@ interface Comment {
   createdAt: string;
 }
 
-export default function CommentSection() {
+interface CommentSectionProps {
+  blogId: string; // Will be used for API integration to fetch and post comments
+}
+
+export default function CommentSection({ blogId }: CommentSectionProps) {
   const [commentList, setCommentList] = useState<Comment[]>([
     {
       id: "1",
@@ -59,7 +63,11 @@ export default function CommentSection() {
           placeholder="コメントを入力..."
           className="flex-1"
         />
-        <Button onClick={handleAddComment} className="bg-[var(--color-accent-green)] text-black">
+        <Button
+          type="submit"
+          className="bg-[rgb(0,255,76)] text-white hover:bg-transparent hover:text-white"
+          onClick={handleAddComment}
+        >
           送信
         </Button>
       </div>

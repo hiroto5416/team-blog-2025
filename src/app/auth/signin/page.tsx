@@ -2,75 +2,87 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthInput } from '@/components/ui/custom/AuthInput';
 import Link from 'next/link';
 import Button from '@/components/ui/custom/button';
 
+// サインインのバリデーションスキーマ
+const signInSchema = z.object({
+  email: z.string().email('正しいメールアドレスを入力してください'),
+  password: z.string().min(6, 'パスワードは6文字以上で入力してください'),
+});
+
+type SignInFormData = z.infer<typeof signInSchema>;
+
 export default function SignInForm() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(''); // エラーメッセージをリセット
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+  });
 
+  const onSubmit = async (data: SignInFormData) => {
     try {
       const res = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) {
         // レスポンスが正常でない場合、エラーメッセージを設定
-        const data = await res.json();
-        setError(data.error || 'ログインに失敗しました');
+        const responseData = await res.json();
+        const errorMessage =
+          responseData.error === 'Email not confirmed'
+            ? '送信された確認メールのリンクをクリックし、メールアドレスを確認済みにしてください'
+            : 'メールアドレスまたはパスワードが間違っています';
+        setError('root', { message: errorMessage });
         return;
       }
-
-      // レスポンスデータを受け取る
-      const data = await res.json();
-
-      console.log('ログイン成功:', data);
 
       // ログイン成功後、プロフィールページにリダイレクト
       router.push('/profile');
     } catch (err: unknown) {
       // ネットワークエラーやその他のエラーが発生した場合
       console.error('Error during login:', err);
-      setError('サーバーエラーが発生しました');
+      setError('root', { message: 'サーバーエラーが発生しました' });
     }
   };
 
   return (
     <div className="mx-auto flex h-screen w-full items-center justify-center">
       <form
-        onSubmit={handleSignIn}
+        onSubmit={handleSubmit(onSubmit)}
         className="flex w-full max-w-2xl flex-col items-center justify-center gap-4"
       >
         <AuthInput
-          label="email"
-          name="Email"
+          label="Email"
           type="email"
           placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
+          {...register('email')}
         />
+        {errors.email && <p className="text-red-500">{errors.email.message}</p>}
         <AuthInput
-          label="password"
-          name="Password"
+          label="Password"
           type="password"
           placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
+          {...register('password')}
         />
-        {error && <p className="text-red-500">{error}</p>}
+        {errors.password && <p className="text-red-500">{errors.password.message}</p>}
+
+        {/* 全体的なエラーメッセージ */}
+        {errors.root && <p className="text-red-500">{errors.root.message}</p>}
+
         <Button>Sing In</Button>
+
         <p>
           Don&apos;t have an account?{' '}
           <Link href="/auth/signup" className="text-blue-500 underline hover:text-blue-700">

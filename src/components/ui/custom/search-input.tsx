@@ -6,15 +6,18 @@ import { useState } from 'react';
 // import { cn } from '@/lib/utils';
 
 interface SearchInputProps {
-  onSearch: (query: string) => void;
+  value?: string;
+  onChange?: (query: string) => void;
+  onEnterPress?: () => void;
+  onSearch?: () => void;
 }
 
 export function SearchInput({ onSearch }: SearchInputProps) {
   const [searchText, setSearchText] = useState<string>('');
 
   const handleSearchClick = (): void => {
-    if (!searchText.trim()) return;
-    onSearch(searchText);
+    if (!searchText.trim() || !onSearch) return;
+    onSearch();
   };
 
   return (
