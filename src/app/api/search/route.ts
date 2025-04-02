@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
  *
  * @remarks
  * - クエリパラメータ `query` を受け取り、タイトルで全文検索を行う
- * - 検索対象は `posts` テーブルで、関連する `users` と `categories` の情報も取得
+ * - 検索対象は `posts` テーブルで、関連する `users` と `category` の情報も取得
  * - 結果は作成日の降順で返される
  *
  * @param req - 検索ワードを含む `NextRequest` オブジェクト
@@ -30,7 +30,7 @@ import { NextRequest, NextResponse } from 'next/server';
  *       "name": "John Doe",
  *       "image_path": "/avatars/john.jpg"
  *     },
- *     "categories": {
+ *     "category": {
  *       "id": 2,
  *       "name": "Tech"
  *     }
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
       .select(
         `id, title, content, created_at,
          users (id, name, image_path),
-         categories (id, name)`,
+         category (id, name)`,
       )
       .or(
         `title.ilike.%${halfWidthQuery}%,title.ilike.%${fullWidthQuery}%,content.ilike.%${halfWidthQuery}%,content.ilike.%${fullWidthQuery}%`,
