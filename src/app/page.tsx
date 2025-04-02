@@ -10,6 +10,8 @@ import { getBlogs } from '@/lib/api/blog';
 import { Blog } from '@/types/blog';
 import Button from '@/components/ui/custom/button';
 
+export const dynamic = "force-dynamic"; // キャッシュ無効化設定
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInputValue, setSearchInputValue] = useState('');
