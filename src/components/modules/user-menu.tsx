@@ -1,21 +1,18 @@
-// src/ui/custom/user-menu.tsx
+// src/components/modules/user-menu.tsx
 "use client";
 
 import * as React from "react";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
 import Image from "next/image";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import Button from "@/components/ui/custom/button";
 
 type UserMenuProps = {
-  userImage?: string | null;
+  userImage?: string;
   userEmail?: string;
+  onLogout: () => void;
 };
 
-export function UserMenu({ userImage, userEmail }: UserMenuProps) {
+export function UserMenu({ userImage, userEmail, onLogout }: UserMenuProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -43,14 +40,12 @@ export function UserMenu({ userImage, userEmail }: UserMenuProps) {
           {userEmail}
         </div>
 
-        <form action="/auth/signout" method="post">
-          <Button
-            type="submit"
-            className="w-full border border-red-500 bg-red-500 text-white hover:bg-red-600 text-sm py-1"
-          >
-            Logout
-          </Button>
-        </form>
+        <button
+          onClick={onLogout}
+          className="w-full border border-red-500 bg-red-500 text-white hover:bg-red-600 text-sm py-1 rounded-md"
+        >
+          Logout
+        </button>
       </PopoverContent>
     </Popover>
   );

@@ -1,4 +1,4 @@
-//サインインコンポーネント
+// src/app/auth/signin/page.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -48,10 +48,10 @@ export default function SignInForm() {
         return;
       }
 
-      // ログイン成功後、プロフィールページにリダイレクト
-      router.push('/profile');
+      // ログイン成功後、ヘッダーのセッション更新が即座に反映されない問題を解決するため、
+      // クライアント全体をフルリロードして最新のセッション状態を取得させる
+      window.location.href = '/profile';
     } catch (err: unknown) {
-      // ネットワークエラーやその他のエラーが発生した場合
       console.error('Error during login:', err);
       setError('root', { message: 'サーバーエラーが発生しました' });
     }
@@ -81,7 +81,7 @@ export default function SignInForm() {
         {/* 全体的なエラーメッセージ */}
         {errors.root && <p className="text-red-500">{errors.root.message}</p>}
 
-        <Button>Sing In</Button>
+        <Button>Sign In</Button>
 
         <p>
           Don&apos;t have an account?{' '}

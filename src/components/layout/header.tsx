@@ -1,61 +1,83 @@
 // src/components/layout/header.tsx
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import Button from '@/components/ui/custom/button';
-import { UserMenu } from '@/components/modules/user-menu';
-import { supabase } from '@/lib/supabase';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import type { Session, User } from "@supabase/auth-helpers-nextjs";
+import Button from "@/components/ui/custom/button";
+import { UserMenu } from "@/components/modules/user-menu";
+
+type ExtendedUser = User & {
+  user_metadata?: {
+    image?: string;
+  };
+};
 
 export default function Header() {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null | undefined>(undefined); // ← undefined 初期化でHydration対策
+  const router = useRouter();
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+    };
+
+    getSession();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/signout", { method: "POST" });
+    setSession(null);
+    router.push("/");
+  };
+
+  // ✅ サーバーとの不一致を防ぐため、セッションが確定するまで描画しない
+  if (session === undefined) return null;
+
+  const userWithMeta = session?.user as ExtendedUser | undefined;
+  const userImage = userWithMeta?.user_metadata?.image;
 
   return (
     <header className="w-full border-b border-[var(--color-muted)] bg-[var(--color-card)] text-[var(--color-foreground)]">
-      <nav className="flex w-full items-center justify-between px-4 py-4 sm:px-6">
-        {/* 左側：ロゴ */}
+      <nav className="flex w-full items-center justify-between px-4 sm:px-6 py-4">
         <Link
           href="/"
-          className="text-2xl font-bold text-[var(--color-accent-blue)] transition hover:opacity-80"
+          className="text-2xl font-bold text-[var(--color-accent-blue)] hover:opacity-80 transition"
         >
           BugDB
         </Link>
-
-        {/* 右側：ログイン状態によって表示切替 */}
         <div className="flex items-center gap-4">
           {session ? (
             <>
-              {/* Createボタン：モノトーン→ホバーでグリーン */}
               <Link href="/articlecreate">
-                <Button className="border border-[var(--color-muted-foreground)] bg-transparent text-[var(--color-muted-foreground)] transition-colors hover:bg-[var(--color-accent-green)] hover:text-white">
+                <Button className="border border-[var(--color-muted-foreground)] bg-transparent text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent-green)] hover:text-white transition-colors">
                   Create
                 </Button>
               </Link>
-
-              {/* ユーザーメニュー */}
               <UserMenu
-                userImage={session.user?.user_metadata?.avatar_url}
-                userEmail={session.user?.email ?? ''}
+                userImage={userImage}
+                userEmail={session.user.email ?? ""}
+                onLogout={handleLogout}
               />
             </>
           ) : (
             <>
               <Link href="/auth/signin">
-                <Button className="border border-[var(--color-accent-green)] bg-transparent text-[var(--color-accent-green)] hover:bg-[var(--color-accent-green)] hover:text-white">
+                <Button className="bg-transparent border border-[var(--color-accent-green)] text-[var(--color-accent-green)] hover:bg-[var(--color-accent-green)] hover:text-white">
                   Login
                 </Button>
               </Link>
