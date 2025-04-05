@@ -1,6 +1,6 @@
 // src/components/modules/blog-card.tsx
 import Link from "next/link";
-import { Post, BlogCardProps } from "@/types/blog-card";
+import { BlogCardProps } from "@/types/blog-card";
 
 export default function BlogCard({ post, customLink }: BlogCardProps) {
   if (!post?.id) return null;
@@ -21,7 +21,6 @@ export default function BlogCard({ post, customLink }: BlogCardProps) {
       </div>
 
       <div className="p-4">
-        {/* タイトル + カテゴリ を同一行 */}
         <div className="flex justify-between items-center mb-2">
           <h3 className="font-bold text-lg text-[var(--color-foreground)]">
             {post.title}
@@ -29,13 +28,16 @@ export default function BlogCard({ post, customLink }: BlogCardProps) {
           <p className="text-sm text-[var(--color-muted)]">{post.category}</p>
         </div>
 
-        {/* 著者 + 日時 横並び */}
-        <div className="flex justify-between text-xs text-[var(--color-muted)]">
+        <div className="flex justify-between text-xs text-[var(--color-muted)] mb-2">
           <div className="flex gap-2">
             <span>{post.author}</span>
             <span>{post.createdAt}</span>
           </div>
         </div>
+
+        <p className="text-sm text-[var(--color-muted-foreground)] line-clamp-3">
+          {post.description}
+        </p>
       </div>
     </Link>
   );

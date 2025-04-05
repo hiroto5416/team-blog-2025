@@ -1,41 +1,30 @@
-// components/modules/blog-list.tsx
+// src/components/modules/blog-list.tsx
 import BlogCard from "@/components/modules/blog-card";
+import { Blog } from "@/types/blog";
+import { Post } from "@/types/blog-card";
 
 interface BlogListProps {
-  searchQuery: string;
-  currentPage: number; // ページネーション対応
+  blogs: Blog[];
 }
 
-const postsPerPage = 3; // 1ページに表示する記事数
-
-/** ダミーポスト */
-const dummyPosts = Array.from({ length: 9 }).map((_, i) => ({
-  id: (i + 1).toString(),
-  title: `Post Title ${i + 1}`,
-  category: "プログラミング",
-  author: "Author",
-  createdAt: "a min ago",
-  image: "/images/placeholder.jpg",
-}));
-
-export default function BlogList({ searchQuery, currentPage }: BlogListProps) {
-  // 検索クエリに基づいて記事をフィルタリング
-  const filteredPosts = dummyPosts.filter((post) =>
-    post.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // ページネーションの計算
-  const startIndex = (currentPage - 1) * postsPerPage;
-  const paginatedPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage);
-
+export default function BlogList({ blogs }: BlogListProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-      {paginatedPosts.map((post) => (
-        <BlogCard key={post.id} post={post} />
-      ))}
+      {blogs.length > 0 ? (
+        blogs.map((blog) => {
+          const blogCardPost: Post = {
+            id: blog.id,
+            title: blog.title,
+            category: blog.category?.name ?? "Uncategorized",
+            author: blog.users?.name ?? "Unknown",
+            createdAt: new Date(blog.created_at).toLocaleDateString(),
+            image: blog.image_path ?? "/images/placeholder.jpg",
+            description: blog.content?.substring(0, 100) ?? "",
+          };
 
-      {/* 記事がない場合の表示 */}
-      {paginatedPosts.length === 0 && (
+          return <BlogCard key={blog.id} post={blogCardPost} />;
+        })
+      ) : (
         <p className="text-center col-span-full text-gray-500">
           該当する記事が見つかりませんでした。
         </p>
