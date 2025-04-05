@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
 /**
  * 記事を新規作成するエンドポイント
@@ -28,6 +30,8 @@ import { NextResponse } from 'next/server';
  * @throws {Error} 記事データの保存に失敗した場合
  */
 export async function POST(request: Request) {
+  const supabase = createRouteHandlerClient({ cookies: () => cookies() })
+
   try {
     // FormDataから各フィールドを取得
     const formData = await request.formData();
@@ -67,7 +71,7 @@ export async function POST(request: Request) {
         {
           title,
           content,
-          user_id,
+          user_id: user_id,
           category_id,
           image_path,
         },
