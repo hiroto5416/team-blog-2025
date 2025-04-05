@@ -7,6 +7,7 @@
 このプロジェクトは、チーム開発における情報共有やコミュニケーションを促進するためのブログプラットフォームです。Next.jsとSupabaseを使用して構築されており、モダンなウェブ技術を活用した高速で安全なアプリケーションを提供します。
 
 ## メンバー
+
 - [kujira-challenge](https://github.com/kujira-challenge)
 - [ida-rie](https://github.com/ida-rie)
 - [fujinoyuki](https://github.com/fujinoyuki)
@@ -18,8 +19,7 @@
 
 - ユーザー認証・認可
 - ブログ記事の作成・編集・削除
-- マークダウンエディタ
-- 記事のカテゴリ分類
+- マークダウンエディタ- 記事のカテゴリ分類
 - コメント機能
 - 記事検索機能
 - レスポンシブデザイン
@@ -33,6 +33,7 @@
 - [Next.js](https://nextjs.org)
 - [Tailwind CSS](https://tailwindcss.com)
 - [Radix UI](https://www.radix-ui.com)
+- [shadcn/ui](https://ui.shadcn.com) - 再利用可能なコンポーネントライブラリ
 
 ### バックエンド
 
