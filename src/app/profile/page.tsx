@@ -1,7 +1,6 @@
-// src/app/profile/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import BlogCard from "@/components/modules/blog-card";
 import { Blog } from "@/types/blog";
 import {
@@ -12,59 +11,56 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/components/ui/pagination";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-// 本番API連携が可能になるまでの仮データ（9件分）
-// 本番では getBlogs() 関数の中で API or Supabase から取得する想定
-const DUMMY_BLOGS: Blog[] = Array.from({ length: 9 }).map((_, i) => ({
-  id: `${i + 1}`,
-  title: `Post Title`,
-  content: "ダミーの本文です",
-  image_path: "/images/placeholder.jpg", // public/images/placeholder.jpg を参照
-  created_at: new Date().toISOString(),
-  user_id: "dummy-user-id",
-  users: {
-    id: "dummy-user-id",
-    name: "Author",
-    image_path: "/images/dummy-user.png", // public/images/dummy-user.png を参照
-  },
-  categories: {
-    id: 1,
-    name: "Category",
-  },
-  category_id: 1,
-}));
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 10;
 
 export default function ProfilePage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [blogs, setBlogs] = useState<Blog[]>([]); // ← 本番ではAPI取得データをここに格納
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // 🚧 本番API実装時はここを入れ替えるだけでOK！
-  // 例: Supabase または fetch("/api/articles") を使用する想定
   useEffect(() => {
-    const getBlogs = async () => {
-      // 本番では以下のように書き換えてください
-      // const res = await fetch("/api/articles");
-      // const data = await res.json();
-      // setBlogs(data);
+    const getUserBlogs = async () => {
+      const supabase = createClientComponentClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      setBlogs(DUMMY_BLOGS); // ← 仮データ使用中
+      if (!user) {
+        console.error("ログインユーザーが取得できません");
+        return;
+      }
+
+      // APIから全記事を取得
+      const res = await fetch("/api/articles");
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("記事の取得に失敗しました", data.error);
+        return;
+      }
+
+      // 自分の投稿だけをフィルター
+      const allPosts: Blog[] = Array.isArray(data.posts) ? data.posts : data;
+      const userPosts = allPosts.filter((post) => post.user_id === user.id);
+
+      setTotalPages(Math.ceil(userPosts.length / ITEMS_PER_PAGE));
+      setBlogs(userPosts);
     };
-    getBlogs();
+
+    getUserBlogs();
   }, []);
 
-  const totalPages = Math.ceil(blogs.length / ITEMS_PER_PAGE);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  // ページごとの表示データを抽出
   const paginatedBlogs = blogs.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="max-w-6xl mx-auto mt-12 px-4">
@@ -79,27 +75,26 @@ export default function ProfilePage() {
             post={{
               id: blog.id,
               title: blog.title,
-              category: blog.categories.name,
-              author: blog.users.name,
-              createdAt: "a min ago", // ⏱ 本番では相対時刻に変換可
-              image: blog.image_path,
+              category: blog.category?.name ?? "カテゴリーなし",
+              author: blog.users?.name ?? "不明",
+              createdAt: "a min ago",
+              image: blog.image_path ?? "/images/placeholder.jpg",
             }}
           />
         ))}
       </div>
 
-      {/* Pagination コンポーネント：ページ送り */}
       <Pagination>
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
               onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
               href="#"
-              className="gap-1 px-2.5 sm:pl-2.5"
             >
-              ← Previous Page
+              ← Previous
             </PaginationPrevious>
           </PaginationItem>
+
           {Array.from({ length: totalPages }).map((_, i) => (
             <PaginationItem key={i}>
               <PaginationLink
@@ -111,15 +106,15 @@ export default function ProfilePage() {
               </PaginationLink>
             </PaginationItem>
           ))}
+
           <PaginationItem>
             <PaginationNext
               onClick={() =>
                 handlePageChange(Math.min(totalPages, currentPage + 1))
               }
               href="#"
-              className="gap-1 px-2.5 sm:pr-2.5"
             >
-              Next Page →
+              Next →
             </PaginationNext>
           </PaginationItem>
         </PaginationContent>
