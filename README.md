@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Team Blog 2025
 
-## Getting Started
+チーム開発のためのブログプラットフォーム
 
-First, run the development server:
+## 概要
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+このプロジェクトは、チーム開発における情報共有やコミュニケーションを促進するためのブログプラットフォームです。Next.jsとSupabaseを使用して構築されており、モダンなウェブ技術を活用した高速で安全なアプリケーションを提供します。
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## メンバー
+- [kujira-challenge](https://github.com/kujira-challenge)
+- [ida-rie](https://github.com/ida-rie)
+- [fujinoyuki](https://github.com/fujinoyuki)
+- [yyi2502](https://github.com/yyi2502)
+- [takeoy-git](https://github.com/takeoy-git)
+- [hiroto5416](https://github.com/hiroto5416)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 主な機能
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- ユーザー認証・認可
+- ブログ記事の作成・編集・削除
+- マークダウンエディタ
+- 記事のカテゴリ分類
+- コメント機能
+- 記事検索機能
+- レスポンシブデザイン
 
-## Learn More
+## 技術スタック
 
-To learn more about Next.js, take a look at the following resources:
+### フロントエンド
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [TypeScript](https://www.typescriptlang.org)
+- [React.js](https://ja.react.dev)
+- [Next.js](https://nextjs.org)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Radix UI](https://www.radix-ui.com)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### バックエンド
 
-## Deploy on Vercel
+- [Supabase](https://supabase.com)
+  - Supabase Auth
+  - Supabase Database
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### インフラ
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Vercel](https://vercel.com)
+
+### ツール
+
+- [GitHub](https://github.co.jp)
+- [ESLint](https://eslint.org)
+- [Prettier](https://prettier.io)
+
+### 言語 / パッケージ
+
+- [Node.js](https://nodejs.org/ja)
+- [npm](https://docs.npmjs.com/cli/v10/commands/npm-version)
+
+### 主要なライブラリ
+
+- `react-hook-form`: フォーム管理
+- `zod`: バリデーション
+- `next-auth`: 認証機能
+- `tailwind-merge`: Tailwind CSSのユーティリティ
+- `lucide-react`: アイコン
