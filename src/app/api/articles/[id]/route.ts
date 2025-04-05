@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
           name,
           image_path
         ),
-        categories (
+        category (
           id,
           name
         )
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest) {
           name,
           image_path
         ),
-        categories (
+        category (
           id,
           name
         )
