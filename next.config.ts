@@ -1,7 +1,9 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  images: {
+    domains: ['dcdpsoyzvkvbihyothbr.supabase.co'], // ← あなたの Supabase プロジェクトの画像ホスト
+  },
+}
 
-export default nextConfig;
+export default nextConfig
