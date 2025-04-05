@@ -107,7 +107,7 @@ export default function EditBlogPage() {
           content,
           category_id: categoryId,
           // image_path: uploadedImagePath, // 画像を変更してなければ元のをそのまま使う
-          image_path: null, // 更新確認のため一旦nullを設定
+          image_path: null, // 更新確認のため一旦nullを設定する
         }),
       });
 
