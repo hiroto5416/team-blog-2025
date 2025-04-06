@@ -1,9 +1,10 @@
-// src/app/profile/page.tsx
+//src/app/profile/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import BlogCard from "@/components/modules/blog-card";
 import { Blog } from "@/types/blog";
+import { Post } from "@/types/blog-card";
 import {
   Pagination,
   PaginationContent,
@@ -13,7 +14,6 @@ import {
   PaginationNext,
 } from "@/components/ui/pagination";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Post } from "@/types/blog-card"; // ✅ 共通Post型を利用
 
 const ITEMS_PER_PAGE = 9;
 
