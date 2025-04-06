@@ -16,16 +16,13 @@ type Category = {
 
 type Props = {
   categories: Category[];
-  value: number | null;
-  onChange: (value: number) => void;
+  value: string | null;
+  onChange: (value: string) => void;
 };
 
 export const CategorySelect = ({ categories, value, onChange }: Props) => {
   return (
-    <Select
-      value={value !== null ? String(value) : ''}
-      onValueChange={(val) => onChange(Number(val))}
-    >
+    <Select value={value !== null ? String(value) : ''} onValueChange={(val) => onChange(val)}>
       <SelectTrigger className="w-[140px] text-sm">
         <SelectValue placeholder="カテゴリ選択" />
       </SelectTrigger>
