@@ -76,14 +76,6 @@ export default function HomePage() {
       {/* Header */}
       <div className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <h1 className="text-3xl font-bold text-[var(--color-foreground)]">Blog Posts</h1>
-        <Button
-          onClick={() => {
-            const isLoggedIn = false;
-            window.location.href = isLoggedIn ? '/articlecreate' : '/login';
-          }}
-        >
-          Create
-        </Button>
       </div>
 
       {/* Search */}
