@@ -11,7 +11,10 @@ export async function getBlogs(
   limit?: number,
 ): Promise<BlogAllData> {
   try {
-    const pageQuery = `page=${encodeURIComponent(page || '')}&limit=${encodeURIComponent(limit || '')}`;
+    const pageQuery = `page=${encodeURIComponent(
+      page || ''
+    )}&limit=${encodeURIComponent(limit || '')}`;
+    
     const url = searchQuery
       ? `/api/search?query=${encodeURIComponent(searchQuery)}&${pageQuery}`
       : `/api/articles?${pageQuery}`;
@@ -29,6 +32,29 @@ export async function getBlogs(
     throw error;
   }
 }
+
+/**
+ * IDを指定して記事を取得
+ * @param id - 記事ID
+ * @returns 記事
+ */
+export async function getBlogById(id: string): Promise<Blog> {
+  try {
+    const response = await fetch(`/api/articles/${id}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || '記事の取得に失敗しました');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Blog fetch error:', error);
+    throw error;
+  }
+}
+
+
 
 /**
  * 新規記事の作成
