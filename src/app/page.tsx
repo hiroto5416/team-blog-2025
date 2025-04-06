@@ -86,7 +86,11 @@ export default function HomePage() {
           onEnterPress={executeSearch}
           onSearch={executeSearch}
         />
-        <Button onClick={executeSearch}>Search</Button>
+        <Button
+          className="bg-[rgb(0,255,76)] text-black  hover:bg-transparent hover:text-white"
+          onClick={executeSearch}>
+            Search
+        </Button>
       </div>
 
       {/* Blog List */}

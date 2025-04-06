@@ -3,6 +3,7 @@
 
 import * as React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 type UserMenuProps = {
@@ -35,7 +36,12 @@ export function UserMenu({ userImage, userEmail, onLogout }: UserMenuProps) {
         sideOffset={8}
         className="z-50 w-56 rounded-xl border border-[var(--color-muted)] bg-[var(--color-card)] p-4 shadow-md"
       >
-        <div className="mb-2 text-sm font-semibold text-[var(--color-foreground)]">{userEmail}</div>
+        {/* メールアドレスをクリック可能なリンクに変更 */}
+        <Link href="/profile">
+          <div className="mb-2 text-sm font-semibold text-[var(--color-foreground)] hover:underline hover:text-[var(--color-accent-cyan)] transition">
+            {userEmail}
+          </div>
+        </Link>
 
         <button
           onClick={onLogout}
