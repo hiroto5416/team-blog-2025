@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/custom/input';
 import { CustomTextarea } from '@/components/ui/custom/CustomTextarea';
 import { CreateButton } from '@/components/ui/custom/CreateButton';
@@ -17,6 +18,7 @@ type Category = {
 };
 
 export default function EditBlogPage() {
+  const router = useRouter();
   const { id } = useParams();
 
   const [title, setTitle] = useState('');
@@ -27,6 +29,7 @@ export default function EditBlogPage() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
 
   useEffect(() => {
+    // カテゴリを取得
     const fetchCategories = async () => {
       try {
         const response = await fetch(`/api/categories`);
@@ -48,6 +51,7 @@ export default function EditBlogPage() {
   }, []);
 
   useEffect(() => {
+    // 記事を取得
     const fetchBlog = async () => {
       try {
         const response = await fetch(`/api/articles/${id}`);
@@ -58,6 +62,7 @@ export default function EditBlogPage() {
         }
 
         const data: Blog = await response.json();
+        console.log(data);
 
         setTitle(data.title);
         setContent(data.content);
@@ -71,6 +76,7 @@ export default function EditBlogPage() {
     if (id) fetchBlog();
   }, [id]);
 
+  // 記事の更新
   const handleUpdate = async () => {
     if (!id) return;
 
@@ -78,26 +84,26 @@ export default function EditBlogPage() {
       let uploadedImagePath = imagePath;
 
       // 新しい画像が指定されている場合のみアップロード
-      // if (imageFile) {
-      //   const formData = new FormData();
-      //   formData.append('image', imageFile);
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
 
-      //   const res = await fetch('/api/upload', {
-      //     method: 'POST',
-      //     body: formData,
-      //   });
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
 
-      //   const result = await res.json();
+        const result = await res.json();
 
-      //   if (!res.ok) {
-      //     throw new Error(result.error || '画像のアップロードに失敗しました');
-      //   }
+        if (!res.ok) {
+          throw new Error(result.error || '画像のアップロードに失敗しました');
+        }
 
-      //   uploadedImagePath = result.image_path;
-      // }
+        uploadedImagePath = result.image_path;
+      }
 
       // 記事の更新（JSON形式）
-      const res = await fetch(`/api/articles/${id}`, {
+      const response = await fetch(`/api/articles/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -106,8 +112,7 @@ export default function EditBlogPage() {
           title,
           content,
           category_id: categoryId,
-          // image_path: uploadedImagePath, // 画像を変更してなければ元のをそのまま使う
-          image_path: null, // 更新確認のため一旦nullを設定する
+          image_path: uploadedImagePath, // 画像を変更してなければ元のをそのまま使う
         }),
       });
 
@@ -115,20 +120,37 @@ export default function EditBlogPage() {
         title,
         content,
         category_id: categoryId,
-        // image_path: uploadedImagePath,
-        image_path: null,
+        image_path: uploadedImagePath,
+        // image_path: null,
       });
 
-      const result = await res.json();
+      const result = await response.json();
       console.log(result);
-      if (!res.ok) {
+      if (!response.ok) {
         throw new Error(result.error || '記事の更新に失敗しました');
       }
 
       alert('記事が更新されました！');
-    } catch (err) {
-      console.error('Blog update error:', err);
+    } catch (error) {
+      console.error('Blog update error:', error);
       alert('記事更新時にエラーが発生しました');
+    }
+  };
+
+  // 記事の削除
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`/api/articles/${id}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+      console.log(result);
+      alert('記事を削除しました');
+      router.push('/profile');
+    } catch (error) {
+      console.error('Blog delete error:', error);
+      alert('記事削除時にエラーが発生しました');
     }
   };
 
@@ -175,10 +197,10 @@ export default function EditBlogPage() {
         </div>
       </div>
 
-      {/* 更新ボタン */}
+      {/* 更新/削除ボタン */}
       <div className="flex justify-end gap-3">
         <CreateButton onClick={handleUpdate}>Edit</CreateButton>
-        <CreateButton onClick={() => console.log('delete')}>Delete</CreateButton>
+        <CreateButton onClick={handleDelete}>Delete</CreateButton>
       </div>
     </section>
   );
