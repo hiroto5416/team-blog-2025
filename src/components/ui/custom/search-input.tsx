@@ -1,22 +1,30 @@
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
-interface SearchInputProps {
-  value: string;
-  onChange: (query: string) => void;
-  onEnterPress: () => void;
-  onSearch: () => void;
+interface SearchInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  className?: string;
+  onEnterPress?: () => void;
+  onSearch?: () => void;
 }
 
-export function SearchInput({ value, onChange, onEnterPress, onSearch }: SearchInputProps) {
+export default function SearchInput({ className, onEnterPress, ...props }: SearchInputProps) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && onEnterPress) {
+      onEnterPress();
+    }
+  };
+
   return (
     <div className="flex w-full items-center justify-center space-x-2">
       <Input
-        type="text"
+        type="search"
         placeholder="Search..."
-        className="h-11 w-full rounded-lg border border-gray-300 bg-transparent p-2 text-[var(--color-foreground)]"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && onEnterPress()}
+        className={cn(
+          'h-11 w-full rounded-lg border border-gray-300 bg-transparent p-2 text-[var(--color-foreground)]',
+          className,
+        )}
+        onKeyDown={handleKeyDown}
+        {...props}
       />
     </div>
   );

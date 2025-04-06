@@ -2,14 +2,14 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { SearchInput } from '@/components/ui/custom/search-input';
+import SearchInput from '@/components/ui/custom/search-input';
 import CustomPagination from '@/components/ui/custom/pagination';
 import { getBlogs } from '@/lib/api/blog';
 import { Blog } from '@/types/blog';
 import Button from '@/components/ui/custom/button';
 import BlogList from '@/components/modules/blog-list';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
   const limit = 9;
@@ -38,7 +38,7 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchBlogs(searchQuery, currentPage);
-  }, [searchQuery, currentPage]);
+  }, [searchQuery, currentPage, fetchBlogs]);
 
   const executeSearch = () => {
     setSearchQuery(searchInputValue);
@@ -46,8 +46,8 @@ export default function HomePage() {
     fetchBlogs(searchInputValue);
   };
 
-  const handleSearch = (query: string) => {
-    setSearchInputValue(query);
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInputValue(event.target.value);
   };
 
   const handlePageChange = (page: number) => {
@@ -57,7 +57,7 @@ export default function HomePage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary" />
+        <div className="border-primary h-12 w-12 animate-spin rounded-full border-t-2 border-b-2" />
       </div>
     );
   }
@@ -65,7 +65,7 @@ export default function HomePage() {
   if (error) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center">
-        <p className="mb-4 text-destructive">{error}</p>
+        <p className="text-destructive mb-4">{error}</p>
         <Button onClick={() => fetchBlogs()}>Retry</Button>
       </div>
     );
