@@ -25,14 +25,16 @@ export default function BlogDetailPage() {
           return;
         }
         const data = await getBlogById(blogId);
-        if (data) {
+
+        
+        if (data.id) {
           setBlog(data);
         } else {
           setError("記事が見つかりませんでした。");
         }
       } catch (err) {
         setError("記事の取得に失敗しました。");
-        console.error("Error fetching blog:", err);
+        console.error("Error fetching blog:", err);  
       } finally {
         setIsLoading(false);
       }
@@ -104,8 +106,8 @@ export default function BlogDetailPage() {
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
               <span className="px-2 py-1 bg-[var(--color-accent-blue)] text-white text-sm rounded">
-                {blog.categories.name}
-              </span>
+                {blog.category?.name}
+                </span>
               <span className="text-sm text-[var(--color-muted)]">
                 {new Date(blog.created_at).toLocaleDateString()}
               </span>
@@ -120,14 +122,18 @@ export default function BlogDetailPage() {
         </div>
 
         <div className="flex items-center space-x-3">
-          <Image
-            src={blog.users.image_path || '/images/user-icon-default.png'}
-            alt={blog.users.name}
-            width={40}
-            height={40}
-            className="rounded-full"
-          />
-          <span className="text-[var(--color-foreground)]">{blog.users.name}</span>
+          {blog.users && (
+            <>
+              <Image
+                src={blog.users.image_path || "/images/user-icon-default.png"}
+                alt={blog.users.name}
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+              <span className="text-[var(--color-foreground)]">{blog.users.name}</span>
+            </>
+          )}
         </div>
       </div>
 

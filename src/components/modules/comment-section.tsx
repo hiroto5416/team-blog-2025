@@ -1,13 +1,14 @@
 // components/modules/comment-section.tsx
 "use client";
 
+import { useEffect } from "react";
 import { useState } from "react";
 import Card from "@/components/ui/custom/card";
 import Input from "@/components/ui/custom/input";
 import Button from "@/components/ui/custom/button";
 
 interface Comment {
-  id: string;
+  id: string; 
   user: string;
   userImage?: string; // 画像パス。未定義ならフォールバックを使用
   text: string;
@@ -19,37 +20,73 @@ interface CommentSectionProps {
 }
 
 export default function CommentSection({ blogId }: CommentSectionProps) {
-  const [commentList, setCommentList] = useState<Comment[]>([
-    {
-      id: "1",
-      user: "User1",
-      userImage: "/images/user-icon-default.png", // デフォルトまたは任意の画像
-      text: "面白いですね！",
-      createdAt: "a min ago",
-    },
-    {
-      id: "2",
-      user: "User2",
-      // userImage: "/images/dummy-user.png", 
-      text: "参考になります。",
-      createdAt: "2 min ago",
-    },
-  ]);
+  const [commentList, setCommentList] = useState<Comment[]>([]);
   const [inputValue, setInputValue] = useState("");
 
-  const handleAddComment = () => {
-    if (!inputValue.trim()) return;
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await fetch(`/api/comments?postId=${blogId}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "コメントの取得に失敗しました");
+        }
+        const data = await response.json();
 
-    // 新しいコメントを追加する例
-    const newComment: Comment = {
-      id: String(commentList.length + 1),
-      user: "You",
-      userImage: "/images/dummy-user.png", // ログインユーザー用アイコン（ダミー）
-      text: inputValue,
-      createdAt: "just now",
+        if (data.data) {
+          const formattedComments = data.data.map((comment: any) => ({
+            id: comment.id,
+            user: comment.users?.name || "Unknown User",
+            userImage: comment.users?.image_path || "/images/user-icon-default.png",
+            text: comment.content,
+            createdAt: comment.created_at,
+          }));
+          setCommentList(formattedComments);
+        }
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
     };
-    setCommentList([...commentList, newComment]);
-    setInputValue("");
+    fetchComments();
+  }, [blogId]);
+
+  const handleAddComment = async () => {
+    if (!inputValue.trim()) return; // 空コメントは送信しない
+    try {
+      const response = await fetch("/api/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ postId: blogId, content: inputValue }), // リクエストボディを修正
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "コメントの送信に失敗しました");
+      }
+      const commentData = await response.json(); // レスポンスボディからコメントデータを取得
+
+      // レスポンスから新しいコメントの情報を抽出
+        
+      
+
+      const newComment: Comment = {
+        id: commentData.data.id,
+        user: commentData.data.user?.name || "Unknown User",
+        userImage: commentData.data.user?.image_path || "/images/user-icon-default.png",
+        text: commentData.data.content,
+        
+        
+        createdAt: commentData.data.created_at, // 投稿日時をレスポンスから取得
+      };
+      setCommentList([...commentList, newComment]);
+    } catch (error) {
+      console.error("Error posting comment:", error);
+    } finally {
+      setInputValue(""); // コメント送信後にリセット
+    }
+  
   };
 
   return (
@@ -59,6 +96,7 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
       <div className="flex space-x-2">
         <Input
           value={inputValue}
+          id="commentInput"
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="コメントを入力..."
           className="flex-1"
