@@ -1,7 +1,6 @@
 // src/app/auth/signin/page.tsx
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,9 +16,7 @@ const signInSchema = z.object({
 
 type SignInFormData = z.infer<typeof signInSchema>;
 
-export default function SignInForm() {
-  const router = useRouter();
-
+export default function SignIn() {
   const {
     register,
     handleSubmit,

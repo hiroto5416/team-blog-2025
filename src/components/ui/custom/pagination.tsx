@@ -1,6 +1,27 @@
 // components/ui/custom/pagination.tsx
 'use client';
 
+interface PaginationItemProps {
+  page: number;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function PaginationItem({ page, isActive, onClick }: PaginationItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded px-3 py-1 ${
+        isActive
+          ? 'bg-[var(--color-accent-green)] text-black'
+          : 'bg-[var(--color-card)] text-[var(--color-foreground)]'
+      } cursor-pointer hover:bg-[var(--color-accent-green)] hover:text-black`}
+    >
+      {page}
+    </button>
+  );
+}
+
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -19,7 +40,7 @@ export default function CustomPagination({
 
   // 現在のページを中心にページを取得
   let startPage = Math.max(2, currentPage - Math.floor((maxPagesToShow - 2) / 2));
-  let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 3);
+  const endPage = Math.min(startPage + maxPagesToShow - 1, totalPages);
 
   // 末尾に近い場合、startPage を調整
   if (endPage === totalPages - 1) {
@@ -27,14 +48,26 @@ export default function CustomPagination({
   }
 
   // ページリストを作成
+  const pages = [];
+  let lastPageNumber = 0;
   for (let i = startPage; i <= endPage; i++) {
-    pageNumbers.push(i);
+    if (lastPageNumber !== i) {
+      pages.push(
+        <PaginationItem
+          key={i}
+          page={i}
+          isActive={i === currentPage}
+          onClick={() => onPageChange(i)}
+        />,
+      );
+      lastPageNumber = i;
+    }
   }
 
   // 省略記号の追加
   const finalPageNumbers = [];
   let lastPage = 0;
-  for (let page of pageNumbers.sort((a, b) => a - b)) {
+  for (const page of pageNumbers.sort((a, b) => a - b)) {
     if (lastPage && page - lastPage > 1) {
       finalPageNumbers.push('...');
     }

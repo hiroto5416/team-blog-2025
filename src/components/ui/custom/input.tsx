@@ -1,17 +1,17 @@
 // components/ui/custom/input.tsx
-"use client";
+'use client';
 
-import { Input as ShadcnInput } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Input as ShadcnInput } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
-interface CustomInputProps extends React.ComponentProps<typeof ShadcnInput> {}
+export type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
-export default function Input({ className, ...props }: CustomInputProps) {
+export default function Input({ className, ...props }: InputProps) {
   return (
     <ShadcnInput
       className={cn(
-        "border border-[var(--color-muted)] bg-[var(--color-card)] text-[var(--color-foreground)] placeholder-gray-400 px-4 py-2 rounded-md",
-        className
+        'rounded-md border border-[var(--color-muted)] bg-[var(--color-card)] px-4 py-2 text-[var(--color-foreground)] placeholder-gray-400',
+        className,
       )}
       {...props}
     />
