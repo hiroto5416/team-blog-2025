@@ -1,3 +1,4 @@
+//src/app/articledetail/[id]/page.tsx
 "use client";
 
 import { useParams } from "next/navigation";
@@ -6,6 +7,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import CommentSection from "@/components/modules/comment-section";
 import { Skeleton } from "@/components/ui/skeleton";
+import Button from '@/components/ui/custom/button';
 import { getBlogById } from "@/lib/api/blog";
 import { Blog } from "@/types/blog";
 
@@ -26,7 +28,6 @@ export default function BlogDetailPage() {
         }
         const data = await getBlogById(blogId);
 
-        
         if (data.id) {
           setBlog(data);
         } else {
@@ -107,7 +108,7 @@ export default function BlogDetailPage() {
             <div className="flex items-center space-x-2">
               <span className="px-2 py-1 bg-[var(--color-accent-blue)] text-white text-sm rounded">
                 {blog.category?.name}
-                </span>
+              </span>
               <span className="text-sm text-[var(--color-muted)]">
                 {new Date(blog.created_at).toLocaleDateString()}
               </span>
@@ -121,19 +122,29 @@ export default function BlogDetailPage() {
           </Link>
         </div>
 
-        <div className="flex items-center space-x-3">
-          {blog.users && (
-            <>
-              <Image
-                src={blog.users.image_path || "/images/user-icon-default.png"}
-                alt={blog.users.name}
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              <span className="text-[var(--color-foreground)]">{blog.users.name}</span>
-            </>
-          )}
+        {/* ユーザー情報と編集ボタン */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {blog.users && (
+              <>
+                <Image
+                  src={blog.users.image_path || "/images/user-icon-default.png"}
+                  alt={blog.users.name}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+                <span className="text-[var(--color-foreground)]">{blog.users.name}</span>
+              </>
+            )}
+          </div>
+
+          {/* 編集ボタンを右端に配置 */}
+          <Link href={`/articleedit/${blog.id}`}>
+            <Button className="bg-[rgb(0,255,76)] text-black hover:bg-transparent hover:text-white">
+              Edit
+            </Button>
+          </Link>
         </div>
       </div>
 

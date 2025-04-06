@@ -64,7 +64,7 @@ export default function Header() {
           {session ? (
             <>
               <Link href="/articlecreate">
-                <Button className="border border-[var(--color-muted-foreground)] bg-transparent text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent-green)] hover:text-white transition-colors">
+                <Button className="bg-[rgb(0,255,76)] text-black  hover:bg-transparent hover:text-white">
                   Create
                 </Button>
               </Link>

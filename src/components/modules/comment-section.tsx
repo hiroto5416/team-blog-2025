@@ -110,10 +110,10 @@ export default function CommentSection({ blogId }: CommentSectionProps) {
         />
         <Button
           type="submit"
-          className="bg-[rgb(0,255,76)] text-white hover:bg-transparent hover:text-white"
+          className="bg-[rgb(0,255,76)] text-black  hover:bg-transparent hover:text-white"
           onClick={handleAddComment}
         >
-          送信
+          Send
         </Button>
       </div>
 
