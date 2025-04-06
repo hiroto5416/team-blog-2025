@@ -29,6 +29,8 @@ export default function EditBlogPage() {
   const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDelete, setIsDelete] = useState(false);
 
   useEffect(() => {
     // カテゴリを取得
@@ -95,6 +97,8 @@ export default function EditBlogPage() {
     }
 
     try {
+      setIsSubmitting(true);
+      setError(null);
       let finalImagePath = previewSrc;
       // 画像ファイルが新しく指定されていればアップロードする
       if (imageFile) {
@@ -142,12 +146,15 @@ export default function EditBlogPage() {
     } catch (error) {
       console.error('記事更新エラー:', error);
       setError(error instanceof Error ? error.message : '記事の更新に失敗しました');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // 記事の削除
   const handleDelete = async () => {
     try {
+      setIsDelete(true);
       const response = await fetch(`/api/articles/${id}`, {
         method: 'DELETE',
       });
@@ -163,6 +170,8 @@ export default function EditBlogPage() {
     } catch (error) {
       console.error('記事更新エラー:', error);
       setError(error instanceof Error ? error.message : '記事の削除に失敗しました');
+    } finally {
+      setIsDelete(false);
     }
   };
 
@@ -190,7 +199,7 @@ export default function EditBlogPage() {
       {/* 本文 + カテゴリ */}
       <div className="relative">
         <div className="rounded-xl border border-[var(--color-muted)] bg-[var(--color-card)] p-4 text-[var(--color-foreground)]">
-          <div className="absolute top-6 right-6 z-10">
+          <div className="mb-2 flex justify-end">
             <CategorySelect categories={categoryList} value={categoryId} onChange={setCategoryId} />
           </div>
 
@@ -205,8 +214,12 @@ export default function EditBlogPage() {
 
       {/* 更新/削除ボタン */}
       <div className="flex justify-end gap-3">
-        <CreateButton onClick={handleUpdate}>Edit</CreateButton>
-        <CreateButton onClick={handleDelete}>Delete</CreateButton>
+        <CreateButton onClick={handleUpdate} disabled={isSubmitting}>
+          {isSubmitting ? '送信中...' : 'Edit'}
+        </CreateButton>
+        <CreateButton onClick={handleDelete} disabled={isDelete}>
+          {isDelete ? '削除中...' : 'Delete'}
+        </CreateButton>
       </div>
     </section>
   );

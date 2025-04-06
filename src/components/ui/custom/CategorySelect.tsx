@@ -23,10 +23,10 @@ type Props = {
 export const CategorySelect = ({ categories, value, onChange }: Props) => {
   return (
     <Select value={value !== null ? String(value) : ''} onValueChange={(val) => onChange(val)}>
-      <SelectTrigger className="w-[140px] text-sm">
+      <SelectTrigger className="iline-block min-w-[235px] text-sm">
         <SelectValue placeholder="カテゴリ選択" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-[var(--color-card)]">
         {categories.map((cat) => (
           <SelectItem key={cat.id} value={String(cat.id)}>
             {cat.name}
