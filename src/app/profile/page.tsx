@@ -1,8 +1,10 @@
+//src/app/profile/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import BlogCard from "@/components/modules/blog-card";
 import { Blog } from "@/types/blog";
+import { Post } from "@/types/blog-card";
 import {
   Pagination,
   PaginationContent,
@@ -13,8 +15,7 @@ import {
 } from "@/components/ui/pagination";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 9;
 
 export default function ProfilePage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,7 +34,6 @@ export default function ProfilePage() {
         return;
       }
 
-      // APIから全記事を取得
       const res = await fetch("/api/articles");
       const data = await res.json();
 
@@ -42,7 +42,6 @@ export default function ProfilePage() {
         return;
       }
 
-      // 自分の投稿だけをフィルター
       const allPosts: Blog[] = Array.isArray(data.posts) ? data.posts : data;
       const userPosts = allPosts.filter((post) => post.user_id === user.id);
 
@@ -65,60 +64,62 @@ export default function ProfilePage() {
   return (
     <div className="max-w-6xl mx-auto mt-12 px-4">
       <h2 className="text-3xl font-bold text-center mb-10 text-[var(--color-foreground)]">
-        Your Post
+        Your Posts
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        {paginatedBlogs.map((blog) => (
-          <BlogCard
-            key={blog.id}
-            post={{
-              id: blog.id,
-              title: blog.title,
-              category: blog.category?.name ?? "カテゴリーなし",
-              author: blog.users?.name ?? "不明",
-              createdAt: "a min ago",
-              image: blog.image_path ?? "/images/placeholder.jpg",
-            }}
-          />
-        ))}
+        {paginatedBlogs.map((blog) => {
+          const blogCardPost: Post = {
+            id: blog.id,
+            title: blog.title,
+            category: blog.category?.name ?? "カテゴリーなし",
+            author: blog.users?.name ?? "不明",
+            createdAt: new Date(blog.created_at).toLocaleDateString(),
+            image: blog.image_path ?? "/images/placeholder.jpg",
+            description: blog.content?.substring(0, 100) ?? "",
+          };
+
+          return <BlogCard key={blog.id} post={blogCardPost} />;
+        })}
       </div>
 
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-              href="#"
-            >
-              ← Previous
-            </PaginationPrevious>
-          </PaginationItem>
-
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <PaginationItem key={i}>
-              <PaginationLink
+      {totalPages > 1 && (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                 href="#"
-                isActive={currentPage === i + 1}
-                onClick={() => handlePageChange(i + 1)}
               >
-                {i + 1}
-              </PaginationLink>
+                ← Previous
+              </PaginationPrevious>
             </PaginationItem>
-          ))}
 
-          <PaginationItem>
-            <PaginationNext
-              onClick={() =>
-                handlePageChange(Math.min(totalPages, currentPage + 1))
-              }
-              href="#"
-            >
-              Next →
-            </PaginationNext>
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  isActive={currentPage === i + 1}
+                  onClick={() => handlePageChange(i + 1)}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={() =>
+                  handlePageChange(Math.min(totalPages, currentPage + 1))
+                }
+                href="#"
+              >
+                Next →
+              </PaginationNext>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 }
