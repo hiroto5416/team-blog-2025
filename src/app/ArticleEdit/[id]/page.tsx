@@ -1,78 +1,197 @@
 // src/app/articleedit/[id]/page.tsx
 
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
-import Input from "@/components/ui/custom/input";
-import { CustomTextarea } from "@/components/ui/custom/CustomTextarea";
-import { CreateButton } from "@/components/ui/custom/CreateButton";
-import { CategorySelect } from "@/components/ui/custom/CategorySelect";
-import { Arrow } from "@/components/ui/custom/Arrow"; // Arrowを使用
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
+import Input from '@/components/ui/custom/input';
+import { CustomTextarea } from '@/components/ui/custom/CustomTextarea';
+import { CreateButton } from '@/components/ui/custom/CreateButton';
+import { CategorySelect } from '@/components/ui/custom/CategorySelect';
+import { Arrow } from '@/components/ui/custom/Arrow'; // Arrowを使用
+import { Blog } from '@/types/blog';
 
-// ダミーデータ（仮のデフォルト記事）
-const dummyArticles = {
-  "101": {
-    title: "ユーザ記事1",
-    category: "Programming",
-    content: "これはユーザ記事1の本文です。",
-    imageUrl: "/images/placeholder.jpg",
-  },
-  "102": {
-    title: "ユーザ記事2",
-    category: "Design",
-    content: "これはユーザ記事2の本文です。",
-    imageUrl: "/images/placeholder.jpg",
-  },
+type Category = {
+  id: number;
+  name: string;
 };
 
 export default function EditBlogPage() {
+  const router = useRouter();
   const { id } = useParams();
-  const article = dummyArticles[id as keyof typeof dummyArticles] || {
-    title: "",
-    category: "",
-    content: "",
-    imageUrl: "/images/placeholder.jpg",
+
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // カテゴリを取得
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`/api/categories`);
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'カテゴリの取得に失敗しました');
+        }
+
+        const data: Category[] = result.data;
+        setCategoryList(data);
+      } catch (error) {
+        console.error('カテゴリ取得エラー:', error);
+        setError(error instanceof Error ? error.message : 'カテゴリの取得に失敗しました');
+      }
+    };
+    fetchCategories();
+  }, [router]);
+
+  useEffect(() => {
+    // 記事を取得
+    const fetchBlog = async () => {
+      try {
+        const response = await fetch(`/api/articles/${id}`);
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || '記事の取得に失敗しました');
+        }
+
+        const data: Blog = result;
+        setTitle(data.title);
+        setContent(data.content);
+        setPreviewSrc(data.image_path);
+        setCategoryId(data.category?.id.toString() ?? null);
+      } catch (error) {
+        console.error('記事取得エラー:', error);
+        setError(error instanceof Error ? error.message : '記事の取得に失敗しました');
+      }
+    };
+    if (id) fetchBlog();
+  }, [id]);
+
+  const handleFileDrop = (file: File) => {
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setPreviewSrc(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
-  const [title, setTitle] = useState(article.title);
-  const [category, setCategory] = useState(article.category);
-  const [content, setContent] = useState(article.content);
-  const [previewSrc, setPreviewSrc] = useState<string | null>(article.imageUrl);
+  // 記事の更新
+  const handleUpdate = async () => {
+    if (!title.trim()) {
+      setError('タイトルを入力してください');
+      return;
+    } else if (!content.trim()) {
+      setError('本文を入力してください');
+      return;
+    } else if (!categoryId) {
+      setError('カテゴリを選択してください');
+      return;
+    }
 
-  const handleUpdate = () => {
-    console.log("更新データ:", { title, category, content, previewSrc });
-    alert("記事が更新されました！（ダミー）");
+    try {
+      let finalImagePath = previewSrc;
+      // 画像ファイルが新しく指定されていればアップロードする
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        const filePath = `posts/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(filePath, imageFile);
+
+        if (uploadError) {
+          setError('画像のアップロードに失敗しました');
+          return;
+        }
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('images').getPublicUrl(filePath);
+
+        finalImagePath = publicUrl;
+      }
+
+      const body = {
+        title,
+        content,
+        category_id: categoryId,
+        image_path: finalImagePath,
+      };
+
+      const response = await fetch(`/api/articles/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || '記事の更新に失敗しました');
+      }
+
+      alert('記事が更新されました！');
+    } catch (error) {
+      console.error('記事更新エラー:', error);
+      setError(error instanceof Error ? error.message : '記事の更新に失敗しました');
+    }
+  };
+
+  // 記事の削除
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`/api/articles/${id}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || '記事の削除に失敗しました');
+      }
+
+      alert('記事が削除されました！');
+      router.push('/profile');
+    } catch (error) {
+      console.error('記事更新エラー:', error);
+      setError(error instanceof Error ? error.message : '記事の削除に失敗しました');
+    }
   };
 
   return (
-    <section className="max-w-3xl mx-auto space-y-6 p-4">
+    <section className="mx-auto max-w-3xl space-y-6 p-4">
+      {error && <div className="rounded-md bg-red-500 p-3 text-white">{error}</div>}
       {/* タイトル入力 */}
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title |"
-        className="text-3xl font-bold placeholder:text-muted"
+        className="placeholder:text-muted text-3xl font-bold"
       />
 
       {/* 画像アップロード - Arrowを使用 */}
       <Arrow
         previewSrc={previewSrc}
-        onDropFile={(file) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setPreviewSrc(reader.result as string);
-          };
-          reader.readAsDataURL(file);
+        onDropFile={handleFileDrop}
+        onRemove={() => {
+          setPreviewSrc(null);
+          setImageFile(null);
         }}
-        onRemove={() => setPreviewSrc(null)}
       />
 
       {/* 本文 + カテゴリ */}
       <div className="relative">
-        <div className="rounded-xl bg-[var(--color-card)] text-[var(--color-foreground)] border border-[var(--color-muted)] p-4">
+        <div className="rounded-xl border border-[var(--color-muted)] bg-[var(--color-card)] p-4 text-[var(--color-foreground)]">
           <div className="absolute top-6 right-6 z-10">
-            <CategorySelect value={category} onChange={setCategory} />
+            <CategorySelect categories={categoryList} value={categoryId} onChange={setCategoryId} />
           </div>
 
           <CustomTextarea
@@ -84,9 +203,10 @@ export default function EditBlogPage() {
         </div>
       </div>
 
-      {/* 更新ボタン */}
-      <div className="flex justify-end">
+      {/* 更新/削除ボタン */}
+      <div className="flex justify-end gap-3">
         <CreateButton onClick={handleUpdate}>Edit</CreateButton>
+        <CreateButton onClick={handleDelete}>Delete</CreateButton>
       </div>
     </section>
   );
